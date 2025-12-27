@@ -20,8 +20,8 @@ public:
      *
      * @note 线程创建后处于挂起状态，需调用 join() 启动线程
      */
-    Thread(void (*func)(void *), const char *name, uint16_t stack_size = 128,
-           void *params = NULL, UBaseType_t priority = osPriorityNormal);
+    Thread(void (*func)(void *), const char *name, uint16_t stack_size = 128, void *params = NULL,
+           UBaseType_t priority = osPriorityNormal);
     /**
      * @brief 销毁线程
      *

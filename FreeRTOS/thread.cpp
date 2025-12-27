@@ -2,12 +2,10 @@
 
 namespace esf
 {
-Thread::Thread(void (*func)(void *), const char *name, uint16_t stack_size,
-               void *params, UBaseType_t priority)
+Thread::Thread(void (*func)(void *), const char *name, uint16_t stack_size, void *params, UBaseType_t priority)
     : m_func(func)
 {
-    xTaskCreate(m_func, name, stack_size * sizeof(StackType_t), params,
-                priority, &m_handle);
+    xTaskCreate(m_func, name, stack_size * sizeof(StackType_t), params, priority, &m_handle);
     vTaskSuspend(m_handle);
 }
 

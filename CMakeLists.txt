@@ -6,6 +6,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_subdirectory(core)
 add_subdirectory(FreeRTOS)
+add_subdirectory(base)
 
 add_library(esf INTERFACE)
 target_link_libraries(esf INTERFACE esf_core esf_freertos)

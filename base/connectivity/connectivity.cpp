@@ -5,16 +5,27 @@ namespace esf
 namespace base
 {
 template <typename Derived, typename QueueType>
-bool Connectivity<Derived, QueueType>::sendMessage(uint8_t *data, size_t size, uint32_t target_id, MessageType type)
+EsfReturnType Connectivity<Derived, QueueType>::sendMessage(MessageType type)
 {
-    return static_cast<Derived *>(this)->sendMessageImpl(data, size, target_id, type);
+    return static_cast<Derived *>(this)->sendMessageImpl(type);
 }
 
 template <typename Derived, typename QueueType>
-bool Connectivity<Derived, QueueType>::receiveMessage(uint8_t *buffer, size_t size, uint32_t source_id,
-                                                      MessageType type)
+EsfReturnType Connectivity<Derived, QueueType>::receiveMessage(MessageType type)
 {
-    return static_cast<Derived *>(this)->receiveMessageImpl(buffer, size, source_id, type);
+    return static_cast<Derived *>(this)->receiveMessageImpl(type);
+}
+
+template <typename Derived, typename QueueType>
+EsfReturnType Connectivity<Derived, QueueType>::pushToSendQueue(QueueType message)
+{
+    return this->read_queue.push(message);
+}
+
+template <typename Derived, typename QueueType>
+EsfReturnType Connectivity<Derived, QueueType>::popFromReceiveQueue(QueueType &message)
+{
+    return this->write_queue.pop(message);
 }
 } // namespace base
 } // namespace esf

@@ -27,5 +27,12 @@ EsfReturnType Connectivity<Derived, QueueType>::popFromReceiveQueue(QueueType &m
 {
     return this->write_queue.pop(message);
 }
+
+template <typename Derived, typename QueueType>
+EsfReturnType Connectivity<Derived, QueueType>::setRxCallback(std::function<EsfReturnType(BaseType_t *)> &callback)
+{
+    m_rxCallbackFunc = callback;
+    return ESF_SUCCESS;
+}
 } // namespace base
 } // namespace esf

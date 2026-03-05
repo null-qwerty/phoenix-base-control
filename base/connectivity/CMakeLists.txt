@@ -1,5 +1,9 @@
 set(CONNECTIVITY_DIR ${CMAKE_CURRENT_LIST_DIR} CACHE PATH "Path to the connectivity directory")
 
+include_directories(
+    ${ESF_BASE_DIR}
+)
+
 file(GLOB_RECURSE CONNECTIVITY_SOURCES
     "${CONNECTIVITY_DIR}/*.cpp"
 )

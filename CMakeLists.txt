@@ -4,6 +4,8 @@ project(Embedded-System-Framework LANGUAGES C CXX ASM)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+set(ESF_ROOT_DIR ${CMAKE_CURRENT_LIST_DIR} CACHE PATH "Path to the ESF root directory")
+
 add_subdirectory(core)
 add_subdirectory(FreeRTOS)
 add_subdirectory(base)

@@ -51,8 +51,8 @@ public:
      * @param pxHigherPriorityTaskWoken 退出后是否调用高优先级任务
      * @return EsfReturnType 成功返回 ESF_SUCCESS(0)，其他情况参考 core/errcode.hpp
      */
-    EsfReturnType pushFromISR(const T &item, BaseType_t *pxHigherPriorityTaskWoken);
-    EsfReturnType popFromISR(T &item, BaseType_t *pxHigherPriorityTaskWoken);
+    EsfReturnType pushFromISR(const T &item, BaseType_t *pxHigherPriorityTaskWoken = nullptr);
+    EsfReturnType popFromISR(T &item, BaseType_t *pxHigherPriorityTaskWoken = nullptr);
 
 private:
     QueueHandle_t m_queueHandle; // 队列 handle

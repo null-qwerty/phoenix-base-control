@@ -6,8 +6,9 @@
 #include <cstdint>
 #include <type_traits>
 
-#include "queue.hpp"
-#include "errcode.hpp"
+#include "FreeRTOS/queue.hpp"
+#include "core/errcode.hpp"
+#include "core/doublebuffer.hpp"
 
 #include <functional>
 
@@ -19,14 +20,14 @@ namespace base
  * @brief 通信接口基类，其他通信方式均继承该接口
  *
  * @tparam Derived 基类
- * @tparam QueueType 队列元素类型
+ * @tparam Message 队列元素类型，即消息类型
  *
  * @note 使用 CRTP 模式，替换纯虚函数。具有两个队列，作用如下：
  * Read Queue：从该队列读取消息进行发送，即 Send Queue；
  * Write Queue：接收到的消息写入该队列，即 Receive Queue。
  */
-template <typename Derived, typename QueueType>
-class Connectivity : public ReadQueueBase<QueueType>, public WriteQueueBase<QueueType> {
+template <typename Derived, typename Message>
+class Connectivity : public ReadQueueBase<Message>, public WriteQueueBase<Message> {
 public:
     enum class MessageType : uint8_t { DATA_STREAM = 0, CAN_STD, CAN_EXT, UART, SPI, I2C, RS485, COUNT };
 
@@ -51,14 +52,14 @@ public:
      * @param message 需要添加的消息
      * @return EsfReturnType 成功返回 ESF_SUCCESS(0)，其他情况参考 core/errcode.hpp
      */
-    EsfReturnType pushToSendQueue(QueueType message);
+    EsfReturnType pushToSendQueue(Message message);
     /**
      * @brief 从接收队列弹出消息
      *
      * @param message 消息存放的位置
      * @return EsfReturnType 成功返回 ESF_SUCCESS(0)，其他情况参考 core/errcode.hpp
      */
-    EsfReturnType popFromReceiveQueue(QueueType &message);
+    EsfReturnType popFromReceiveQueue(Message &message);
     /**
      * @brief 设置接收回调函数
      *
@@ -71,10 +72,12 @@ protected:
     Connectivity() = default;
     virtual ~Connectivity() = default;
 
+    DoubleBuffer<Message> m_receiveData; // 接收数据缓冲区
+
     EsfReturnType m_sendErrCode; // 发送错误码
     EsfReturnType m_receiveErrCode; // 接收错误码
 
-    std::function<EsfReturnType(BaseType_t *)> m_rxCallbackFunc; // 接收回调函数
+    std::function<EsfReturnType(Message &)> m_rxCallbackFunc; // 接收回调函数，用于根据接收的消息通知其他模块进行处理
 };
 
 } // namespace base

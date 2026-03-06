@@ -56,11 +56,11 @@ private:
     // 全局 FDCAN 实例映射，便于在中断回调中找到对应的实例
     static std::map<FDCAN_GlobalTypeDef *, FDCAN *> fdcan_map;
 
-    uint8_t m_receiveData[64] = { 0 }; // 接收数据缓冲区
-
     // 实现 Connectivity 接口的发送和接收函数
     EsfReturnType _sendMessageImpl(MessageType type);
     EsfReturnType _receiveMessageImpl(MessageType type);
+
+    EsfReturnType _rxCallback();
 };
 } // namespace base
 } // namespace esf

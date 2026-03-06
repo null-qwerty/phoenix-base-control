@@ -26,7 +26,7 @@ namespace base
  * Read Queue：从该队列读取消息进行发送，即 Send Queue；
  * Write Queue：接收到的消息写入该队列，即 Receive Queue。
  */
-template <typename Derived, typename Message>
+template <typename Derived, typename Message = Derived::Message>
 class Connectivity : public ReadQueueBase<Message>, public WriteQueueBase<Message> {
 public:
     enum class MessageType : uint8_t { DATA_STREAM = 0, CAN_STD, CAN_EXT, UART, SPI, I2C, RS485, COUNT };

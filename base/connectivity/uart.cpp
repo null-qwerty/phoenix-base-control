@@ -167,7 +167,7 @@ EsfReturnType UART::_sendMessageImpl(MessageType type)
         return m_sendErrCode;
     }
     // 发送消息
-    if (HAL_UART_Transmit(m_handle, message.data, message.size, HAL_MAX_DELAY) != HAL_OK) {
+    if (HAL_UART_Transmit_DMA(m_handle, message.data, message.size) != HAL_OK) {
         return (m_sendErrCode = ESF_CONNECTIVITY_SEND_ERROR);
     }
     return m_sendErrCode;

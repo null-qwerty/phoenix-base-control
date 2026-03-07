@@ -55,7 +55,7 @@ private:
     UART *m_uart;
     Dt7Protocol m_receiveData;
 
-    EsfStatus errCode;
+    EsfStatus m_status;
 };
 
 } // namespace base

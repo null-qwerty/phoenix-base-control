@@ -23,7 +23,7 @@ Dt7Protocol &Dt7::data()
 Dt7 &Dt7::decode()
 {
     UartMessage msg;
-    this->errCode = m_uart->popFromReceiveQueue(msg);
+    this->m_status = m_uart->popFromReceiveQueue(msg);
     if (msg.size != 18) {
         return *this; // 数据长度不正确，返回当前对象
     }

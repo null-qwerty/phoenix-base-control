@@ -40,23 +40,9 @@ Dt7 &Dt7::decode(const uint8_t *databuffer, size_t size)
     m_receiveData.mouse.press_l = databuffer[14];
     m_receiveData.mouse.press_r = databuffer[15];
     // 解析键盘数据
-    uint16_t key_value = databuffer[16] | (databuffer[17] << 8);
-    m_receiveData.key.w = (key_value >> 0) & 0x01;
-    m_receiveData.key.s = (key_value >> 1) & 0x01;
-    m_receiveData.key.a = (key_value >> 2) & 0x01;
-    m_receiveData.key.d = (key_value >> 3) & 0x01;
-    m_receiveData.key.q = (key_value >> 4) & 0x01;
-    m_receiveData.key.e = (key_value >> 5) & 0x01;
-    m_receiveData.key.shift = (key_value >> 6) & 0x01;
-    m_receiveData.key.ctrl = (key_value >> 7) & 0x01;
-    m_receiveData.key.r = (key_value >> 8) & 0x01;
-    m_receiveData.key.f = (key_value >> 9) & 0x01;
-    m_receiveData.key.g = (key_value >> 10) & 0x01;
-    m_receiveData.key.z = (key_value >> 11) & 0x01;
-    m_receiveData.key.x = (key_value >> 12) & 0x01;
-    m_receiveData.key.c = (key_value >> 13) & 0x01;
-    m_receiveData.key.v = (key_value >> 14) & 0x01;
-    m_receiveData.key.b = (key_value >> 15) & 0x01;
+    uint8_t *key_data = (uint8_t *)&m_receiveData.key;
+    key_data[0] = databuffer[16];
+    key_data[1] = databuffer[17];
     return *this;
 }
 } // namespace base

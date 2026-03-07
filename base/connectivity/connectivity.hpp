@@ -61,6 +61,13 @@ public:
      */
     EsfStatus popFromReceiveQueue(Message &message);
     /**
+     * @brief 设置接收数据大小
+     *
+     * @param size 接收数据大小，单位为字节
+     * @return Connectivity<Derived> 返回当前实例的引用，便于链式调用
+     */
+    Connectivity<Derived, Message> setReceiveDataSize(size_t size);
+    /**
      * @brief 设置接收回调函数
      *
      * @param callback 接收回调函数，参数为 BaseType_t*，用于指示是否需要切换到更高优先级的任务

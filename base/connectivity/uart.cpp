@@ -1,6 +1,4 @@
 #include "uart.hpp"
-#include "errcode.hpp"
-#include "stm32h7xx_hal_uart.h"
 
 #ifdef HAL_UART_MODULE_ENABLED
 

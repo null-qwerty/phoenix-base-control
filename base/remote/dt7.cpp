@@ -20,11 +20,14 @@ Dt7Protocol &Dt7::data()
     return m_receiveData;
 }
 
-Dt7 &Dt7::decode(const uint8_t *databuffer, size_t size)
+Dt7 &Dt7::decode()
 {
-    if (size != 18) {
+    UartMessage msg;
+    this->errCode = m_uart->popFromReceiveQueue(msg);
+    if (msg.size != 18) {
         return *this; // 数据长度不正确，返回当前对象
     }
+    const uint8_t *databuffer = msg.data;
     // 解析遥控器数据
     m_receiveData.rc.ch0 = (databuffer[0] | (databuffer[1] << 8)) & 0x07FF;
     m_receiveData.rc.ch1 = ((databuffer[1] >> 3) | (databuffer[2] << 5)) & 0x07FF;

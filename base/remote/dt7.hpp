@@ -49,11 +49,13 @@ public:
     ~Dt7() = default;
     Dt7 &init();
     Dt7Protocol &data();
-    Dt7 &decode(const uint8_t *databuffer, size_t size = 18);
+    Dt7 &decode();
 
 private:
     UART *m_uart;
     Dt7Protocol m_receiveData;
+
+    EsfReturnType errCode;
 };
 
 } // namespace base

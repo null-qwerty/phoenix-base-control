@@ -35,38 +35,38 @@ public:
      * @brief 发送消息接口
      *
      * @param type 通信类型
-     * @return EsfReturnType 成功返回 ESF_SUCCESS(0)，其他情况参考 core/errcode.hpp
+     * @return EsfStatus 成功返回 ESF_SUCCESS(0)，其他情况参考 core/errcode.hpp
      */
-    virtual EsfReturnType sendMessage(MessageType type) final;
+    virtual EsfStatus sendMessage(MessageType type) final;
     /**
      * @brief 接收消息接口
      *
      * @param type 通信类型
-     * @return EsfReturnType 成功返回 ESF_SUCCESS(0)，其他情况参考 core/errcode.hpp
+     * @return EsfStatus 成功返回 ESF_SUCCESS(0)，其他情况参考 core/errcode.hpp
      */
-    virtual EsfReturnType receiveMessage(MessageType type) final;
+    virtual EsfStatus receiveMessage(MessageType type) final;
 
     /**
      * @brief 向发送队列添加消息
      *
      * @param message 需要添加的消息
-     * @return EsfReturnType 成功返回 ESF_SUCCESS(0)，其他情况参考 core/errcode.hpp
+     * @return EsfStatus 成功返回 ESF_SUCCESS(0)，其他情况参考 core/errcode.hpp
      */
-    EsfReturnType pushToSendQueue(Message message);
+    EsfStatus pushToSendQueue(Message message);
     /**
      * @brief 从接收队列弹出消息
      *
      * @param message 消息存放的位置
-     * @return EsfReturnType 成功返回 ESF_SUCCESS(0)，其他情况参考 core/errcode.hpp
+     * @return EsfStatus 成功返回 ESF_SUCCESS(0)，其他情况参考 core/errcode.hpp
      */
-    EsfReturnType popFromReceiveQueue(Message &message);
+    EsfStatus popFromReceiveQueue(Message &message);
     /**
      * @brief 设置接收回调函数
      *
      * @param callback 接收回调函数，参数为 BaseType_t*，用于指示是否需要切换到更高优先级的任务
-     * @return EsfReturnType 成功返回 ESF_SUCCESS(0)，其他情况参考 core/errcode.hpp
+     * @return EsfStatus 成功返回 ESF_SUCCESS(0)，其他情况参考 core/errcode.hpp
      */
-    EsfReturnType setRxCallback(std::function<EsfReturnType(BaseType_t *)> &callback);
+    EsfStatus setRxCallback(std::function<EsfStatus(BaseType_t *)> &callback);
 
 protected:
     Connectivity() = default;
@@ -74,10 +74,10 @@ protected:
 
     DoubleBuffer<Message> m_receiveData; // 接收数据缓冲区
 
-    EsfReturnType m_sendErrCode; // 发送错误码
-    EsfReturnType m_receiveErrCode; // 接收错误码
+    EsfStatus m_sendErrCode; // 发送错误码
+    EsfStatus m_receiveErrCode; // 接收错误码
 
-    std::function<EsfReturnType(Message &)> m_rxCallbackFunc; // 接收回调函数，用于根据接收的消息通知其他模块进行处理
+    std::function<EsfStatus(Message &)> m_rxCallbackFunc; // 接收回调函数，用于根据接收的消息通知其他模块进行处理
 };
 
 } // namespace base

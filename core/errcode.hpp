@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-enum EsfReturnType : uint8_t {
+enum EsfStatus : uint8_t {
     ESF_SUCCESS = 0,
     ESF_TIMEOUT,
     ESF_QUEUE_FULL,

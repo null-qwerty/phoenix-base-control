@@ -158,7 +158,7 @@ UART &UART::init()
     return *this;
 }
 
-EsfReturnType UART::_sendMessageImpl(MessageType type)
+EsfStatus UART::_sendMessageImpl(MessageType type)
 {
     // 从发送队列中获取消息进行发送
     Message message;
@@ -173,12 +173,12 @@ EsfReturnType UART::_sendMessageImpl(MessageType type)
     return m_sendErrCode;
 }
 
-EsfReturnType UART::_receiveMessageImpl(MessageType type)
+EsfStatus UART::_receiveMessageImpl(MessageType type)
 {
     return ESF_SUCCESS;
 }
 
-EsfReturnType UART::_rxCallback(uint16_t size)
+EsfStatus UART::_rxCallback(uint16_t size)
 {
     // 切换接收缓冲区
     m_receiveData.swap();

@@ -57,10 +57,10 @@ private:
     static std::map<FDCAN_GlobalTypeDef *, FDCAN *> fdcan_map;
 
     // 实现 Connectivity 接口的发送和接收函数
-    EsfReturnType _sendMessageImpl(MessageType type);
-    EsfReturnType _receiveMessageImpl(MessageType type);
+    EsfStatus _sendMessageImpl(MessageType type);
+    EsfStatus _receiveMessageImpl(MessageType type);
 
-    EsfReturnType _rxCallback();
+    EsfStatus _rxCallback();
 };
 } // namespace base
 } // namespace esf

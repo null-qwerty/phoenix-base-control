@@ -32,27 +32,27 @@ public:
      *
      * @param item 需要添加的元素
      * @param ticksToWait 超时时间，默认 0
-     * @return EsfReturnType 成功返回 ESF_SUCCESS(0)，其他情况参考 core/errcode.hpp
+     * @return EsfStatus 成功返回 ESF_SUCCESS(0)，其他情况参考 core/errcode.hpp
      */
-    EsfReturnType push(const T &item, TickType_t ticksToWait = 0);
+    EsfStatus push(const T &item, TickType_t ticksToWait = 0);
     /**
      * @brief 从队列头弹出元素
      *
      * @param item 弹出元素存放的位置
      * @param ticksToWait 超时时间，默认 0
-     * @return EsfReturnType 成功返回 ESF_SUCCESS(0)，其他情况参考 core/errcode.hpp
+     * @return EsfStatus 成功返回 ESF_SUCCESS(0)，其他情况参考 core/errcode.hpp
      */
-    EsfReturnType pop(T &item, TickType_t ticksToWait = 0);
+    EsfStatus pop(T &item, TickType_t ticksToWait = 0);
 
     /**
      * @brief 从中断向队列尾添加元素
      *
      * @param item 需要添加的元素
      * @param pxHigherPriorityTaskWoken 退出后是否调用高优先级任务
-     * @return EsfReturnType 成功返回 ESF_SUCCESS(0)，其他情况参考 core/errcode.hpp
+     * @return EsfStatus 成功返回 ESF_SUCCESS(0)，其他情况参考 core/errcode.hpp
      */
-    EsfReturnType pushFromISR(const T &item, BaseType_t *pxHigherPriorityTaskWoken = nullptr);
-    EsfReturnType popFromISR(T &item, BaseType_t *pxHigherPriorityTaskWoken = nullptr);
+    EsfStatus pushFromISR(const T &item, BaseType_t *pxHigherPriorityTaskWoken = nullptr);
+    EsfStatus popFromISR(T &item, BaseType_t *pxHigherPriorityTaskWoken = nullptr);
 
 private:
     QueueHandle_t m_queueHandle; // 队列 handle

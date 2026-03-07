@@ -17,21 +17,21 @@ Queue<T>::~Queue()
 }
 
 template <typename T>
-EsfReturnType Queue<T>::push(const T &item, TickType_t ticksToWait)
+EsfStatus Queue<T>::push(const T &item, TickType_t ticksToWait)
 {
     auto err = xQueueSend(m_queueHandle, &item, ticksToWait);
     return err == pdPASS ? ESF_SUCCESS : (err == errQUEUE_FULL ? ESF_QUEUE_FULL : ESF_TIMEOUT);
 }
 
 template <typename T>
-EsfReturnType Queue<T>::pop(T &item, TickType_t ticksToWait)
+EsfStatus Queue<T>::pop(T &item, TickType_t ticksToWait)
 {
     auto err = xQueueReceive(m_queueHandle, &item, ticksToWait);
     return err == pdPASS ? ESF_SUCCESS : (err == errQUEUE_EMPTY ? ESF_QUEUE_EMPTY : ESF_TIMEOUT);
 }
 
 template <typename T>
-EsfReturnType Queue<T>::pushFromISR(const T &item, BaseType_t *pxHigherPriorityTaskWoken)
+EsfStatus Queue<T>::pushFromISR(const T &item, BaseType_t *pxHigherPriorityTaskWoken)
 {
     if (pxHigherPriorityTaskWoken == nullptr) {
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
@@ -43,7 +43,7 @@ EsfReturnType Queue<T>::pushFromISR(const T &item, BaseType_t *pxHigherPriorityT
 }
 
 template <typename T>
-EsfReturnType Queue<T>::popFromISR(T &item, BaseType_t *pxHigherPriorityTaskWoken)
+EsfStatus Queue<T>::popFromISR(T &item, BaseType_t *pxHigherPriorityTaskWoken)
 {
     if (pxHigherPriorityTaskWoken == nullptr) {
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;

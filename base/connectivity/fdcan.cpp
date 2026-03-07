@@ -56,7 +56,7 @@ FDCAN &FDCAN::init()
     return *this;
 }
 
-EsfReturnType FDCAN::_sendMessageImpl(MessageType type)
+EsfStatus FDCAN::_sendMessageImpl(MessageType type)
 {
     FDCAN_TxHeaderTypeDef tx_header = { 0 };
     // 从发送队列中获取消息进行发送
@@ -79,7 +79,7 @@ EsfReturnType FDCAN::_sendMessageImpl(MessageType type)
     return m_sendErrCode;
 }
 
-EsfReturnType FDCAN::_receiveMessageImpl(MessageType type)
+EsfStatus FDCAN::_receiveMessageImpl(MessageType type)
 {
     FDCAN_RxHeaderTypeDef rx_header = { 0 };
 
@@ -101,7 +101,7 @@ EsfReturnType FDCAN::_receiveMessageImpl(MessageType type)
     return m_receiveErrCode;
 }
 
-EsfReturnType FDCAN::_rxCallback()
+EsfStatus FDCAN::_rxCallback()
 {
     FDCAN_RxHeaderTypeDef rx_header = { 0 };
     auto halerrcode = HAL_FDCAN_GetRxMessage(

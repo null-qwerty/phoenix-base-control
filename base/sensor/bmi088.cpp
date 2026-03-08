@@ -40,20 +40,20 @@ template <typename ConnectivityType>
 EsfStatus BMI088<ConnectivityType>::readData()
 {
     EsfStatus errcode = ESF_SUCCESS;
-    this->_readAcc();
+    this->_readAcc(); // 读加速度计
     if (m_acc_status != ESF_SUCCESS) {
         errcode = m_acc_status;
     }
-    this->_readGyro();
+    this->_readGyro(); // 读角速度计
     if (m_gyro_status != ESF_SUCCESS) {
         errcode = errcode == ESF_SUCCESS ? m_gyro_status : ESF_MULTIPLE_ERROR;
     }
-    this->_readTemprature();
+    this->_readTemprature(); // 读温度
 
     if (m_temprature_status != ESF_SUCCESS) {
         errcode = errcode == ESF_SUCCESS ? m_temprature_status : ESF_MULTIPLE_ERROR;
     }
-    this->_calibrateGyro();
+    this->_calibrateGyro(); // 矫正角速度
     return *this;
 }
 
@@ -252,6 +252,7 @@ EsfStatus BMI088<ConnectivityType>::_readDataFromGyro(uint8_t reg, uint8_t *data
 
 #include "connectivity/spi.hpp"
 #ifdef HAL_SPI_MODULE_ENABLED
+/* SPI 通信下的读写函数 */
 namespace esf
 {
 namespace base
@@ -261,11 +262,12 @@ EsfStatus BMI088<SPI>::_readByte(uint8_t reg, uint8_t *buf, size_t len)
 {
     reg |= BMI088_READ;
     EsfStatus errcode = ESF_SUCCESS;
+    // 由于接收函数是阻塞的，reg 变量不会被回收，直接使用其地址
     errcode = this->m_connectivity.pushToSendQueue({ &reg, 1 });
     if (errcode != ESF_SUCCESS) {
         return errcode;
     }
-    errcode = this->m_connectivity.setReceiveDataSize(len).receiveMessage(SPI::MessageType::SPI);
+    errcode = this->m_connectivity.setReceiveDataSize(len).receiveMessage(SPI::MessageType::SPI); // 阻塞接收
     if (errcode != ESF_SUCCESS) {
         return errcode;
     }
@@ -282,7 +284,7 @@ template <>
 EsfStatus BMI088<SPI>::_writeByte(uint8_t reg, uint8_t data)
 {
     reg |= BMI088_WRITE;
-    static uint8_t s_bmi088_send_buf[2];
+    static uint8_t s_bmi088_send_buf[2]; // 防止局部变量被回收导致段错误，此处设置为静态变量
     s_bmi088_send_buf[0] = reg;
     s_bmi088_send_buf[1] = data;
     EsfStatus errcode = ESF_SUCCESS;

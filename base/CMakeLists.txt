@@ -5,6 +5,7 @@ include_directories(
 )
 
 add_subdirectory(connectivity)
+add_subdirectory(remote)
 
 add_library(esf_base INTERFACE)
-target_link_libraries(esf_base INTERFACE connectivity)
+target_link_libraries(esf_base INTERFACE connectivity remote)

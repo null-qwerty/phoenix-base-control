@@ -4,26 +4,30 @@ namespace esf
 {
 namespace base
 {
-Dt7::Dt7(UART_HandleTypeDef &handle)
-    : m_uart(new UART(handle))
+template <typename ConnectivityType>
+Dt7<ConnectivityType>::Dt7(ConnectivityType &connectivity)
+    : WithConnectivity<ConnectivityType>(connectivity)
 {
 }
 
-Dt7 &Dt7::init()
+template <typename ConnectivityType>
+Dt7<ConnectivityType> &Dt7<ConnectivityType>::init()
 {
-    m_uart->init();
+    this->m_connectivity.init();
     return *this;
 }
 
-Dt7Protocol &Dt7::data()
+template <typename ConnectivityType>
+Dt7Protocol &Dt7<ConnectivityType>::data()
 {
     return m_receiveData;
 }
 
-Dt7 &Dt7::decode()
+template <typename ConnectivityType>
+Dt7<ConnectivityType> &Dt7<ConnectivityType>::decode()
 {
     UartMessage msg;
-    this->m_status = m_uart->popFromReceiveQueue(msg);
+    this->m_status = this->m_connectivity.popFromReceiveQueue(msg);
     if (msg.size != 18) {
         return *this; // 数据长度不正确，返回当前对象
     }

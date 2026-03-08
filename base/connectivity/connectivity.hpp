@@ -87,5 +87,21 @@ protected:
     std::function<EsfStatus(Message &)> m_rxCallbackFunc; // 接收回调函数，用于根据接收的消息通知其他模块进行处理
 };
 
+/**
+ * @brief 具有通信接口的基类，其他模块继承该类以获得通信能力
+ *
+ * @tparam ConnectivityType 具体的通信接口类型，如 UART、SPI 等
+ */
+template <typename ConnectivityType>
+class WithConnectivity {
+public:
+    WithConnectivity(ConnectivityType &connectivity)
+        : m_connectivity(connectivity) {};
+    ~WithConnectivity() = default;
+
+protected:
+    ConnectivityType &m_connectivity;
+};
+
 } // namespace base
 } // namespace esf

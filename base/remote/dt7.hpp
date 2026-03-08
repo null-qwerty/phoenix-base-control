@@ -43,16 +43,16 @@ struct Dt7Protocol {
     } key;
 };
 
-class Dt7 {
+template <typename ConnectivityType>
+class Dt7 : public WithConnectivity<ConnectivityType> {
 public:
-    Dt7(UART_HandleTypeDef &handle);
+    Dt7(ConnectivityType &connectivity);
     ~Dt7() = default;
     Dt7 &init();
     Dt7Protocol &data();
     Dt7 &decode();
 
 private:
-    UART *m_uart;
     Dt7Protocol m_receiveData;
 
     EsfStatus m_status;

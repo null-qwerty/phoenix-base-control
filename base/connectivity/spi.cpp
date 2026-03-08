@@ -84,11 +84,15 @@ EsfStatus SPI::_sendMessageImpl(MessageType type)
 
 EsfStatus SPI::_receiveMessageImpl(MessageType type)
 {
-    // 启动 DMA 接收
-    if (HAL_SPI_Receive_DMA(m_handle, m_receiveData.write().data, m_receiveData.write().size) != HAL_OK) {
-        return (m_receiveErrCode = ESF_CONNECTIVITY_RECEIVE_ERROR);
+    // 阻塞式接收
+    auto errcode = HAL_SPI_Receive(m_handle, m_receiveData.write().data, m_receiveData.write().size, HAL_MAX_DELAY);
+    if (errcode == HAL_OK) {
+        m_receiveErrCode = ESF_SUCCESS;
+        m_receiveData.swap();
+    } else {
+        m_receiveErrCode = ESF_CONNECTIVITY_RECEIVE_ERROR;
     }
-    return ESF_SUCCESS;
+    return m_receiveErrCode;
 }
 
 EsfStatus SPI::_rxCallback(uint16_t size)

@@ -6,6 +6,7 @@ include_directories(
 
 add_subdirectory(connectivity)
 add_subdirectory(remote)
+add_subdirectory(sensor)
 
 add_library(esf_base INTERFACE)
-target_link_libraries(esf_base INTERFACE connectivity remote)
+target_link_libraries(esf_base INTERFACE connectivity remote sensor)

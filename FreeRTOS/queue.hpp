@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/errcode.hpp"
+#include "core/status.hpp"
 
 #include "FreeRTOS.h"
 #include "queue.h"
@@ -32,7 +32,7 @@ public:
      *
      * @param item 需要添加的元素
      * @param ticksToWait 超时时间，默认 0
-     * @return EsfStatus 成功返回 ESF_SUCCESS(0)，其他情况参考 core/errcode.hpp
+     * @return EsfStatus 成功返回 ESF_SUCCESS(0)，其他情况参考 core/status.hpp
      */
     EsfStatus push(const T &item, TickType_t ticksToWait = 0);
     /**
@@ -40,7 +40,7 @@ public:
      *
      * @param item 弹出元素存放的位置
      * @param ticksToWait 超时时间，默认 0
-     * @return EsfStatus 成功返回 ESF_SUCCESS(0)，其他情况参考 core/errcode.hpp
+     * @return EsfStatus 成功返回 ESF_SUCCESS(0)，其他情况参考 core/status.hpp
      */
     EsfStatus pop(T &item, TickType_t ticksToWait = 0);
 
@@ -49,7 +49,7 @@ public:
      *
      * @param item 需要添加的元素
      * @param pxHigherPriorityTaskWoken 退出后是否调用高优先级任务
-     * @return EsfStatus 成功返回 ESF_SUCCESS(0)，其他情况参考 core/errcode.hpp
+     * @return EsfStatus 成功返回 ESF_SUCCESS(0)，其他情况参考 core/status.hpp
      */
     EsfStatus pushFromISR(const T &item, BaseType_t *pxHigherPriorityTaskWoken = nullptr);
     EsfStatus popFromISR(T &item, BaseType_t *pxHigherPriorityTaskWoken = nullptr);

@@ -7,7 +7,7 @@
 #include <type_traits>
 
 #include "FreeRTOS/queue.hpp"
-#include "core/errcode.hpp"
+#include "core/status.hpp"
 #include "core/doublebuffer.hpp"
 
 #include <functional>
@@ -35,14 +35,14 @@ public:
      * @brief 发送消息接口
      *
      * @param type 通信类型
-     * @return EsfStatus 成功返回 ESF_SUCCESS(0)，其他情况参考 core/errcode.hpp
+     * @return EsfStatus 成功返回 ESF_SUCCESS(0)，其他情况参考 core/status.hpp
      */
     virtual EsfStatus sendMessage(MessageType type) final;
     /**
      * @brief 接收消息接口
      *
      * @param type 通信类型
-     * @return EsfStatus 成功返回 ESF_SUCCESS(0)，其他情况参考 core/errcode.hpp
+     * @return EsfStatus 成功返回 ESF_SUCCESS(0)，其他情况参考 core/status.hpp
      */
     virtual EsfStatus receiveMessage(MessageType type) final;
 
@@ -50,14 +50,14 @@ public:
      * @brief 向发送队列添加消息
      *
      * @param message 需要添加的消息
-     * @return EsfStatus 成功返回 ESF_SUCCESS(0)，其他情况参考 core/errcode.hpp
+     * @return EsfStatus 成功返回 ESF_SUCCESS(0)，其他情况参考 core/status.hpp
      */
     EsfStatus pushToSendQueue(Message message);
     /**
      * @brief 从接收队列弹出消息
      *
      * @param message 消息存放的位置
-     * @return EsfStatus 成功返回 ESF_SUCCESS(0)，其他情况参考 core/errcode.hpp
+     * @return EsfStatus 成功返回 ESF_SUCCESS(0)，其他情况参考 core/status.hpp
      */
     EsfStatus popFromReceiveQueue(Message &message);
     /**
@@ -71,7 +71,7 @@ public:
      * @brief 设置接收回调函数
      *
      * @param callback 接收回调函数，参数为 BaseType_t*，用于指示是否需要切换到更高优先级的任务
-     * @return EsfStatus 成功返回 ESF_SUCCESS(0)，其他情况参考 core/errcode.hpp
+     * @return EsfStatus 成功返回 ESF_SUCCESS(0)，其他情况参考 core/status.hpp
      */
     EsfStatus setRxCallback(std::function<EsfStatus(BaseType_t *)> &callback);
 

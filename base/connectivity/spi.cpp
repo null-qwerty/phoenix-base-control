@@ -1,5 +1,4 @@
 #include "spi.hpp"
-#include "errcode.hpp"
 
 #ifdef HAL_SPI_MODULE_ENABLED
 

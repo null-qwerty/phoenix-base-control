@@ -1,5 +1,4 @@
 #include "fdcan.hpp"
-#include "errcode.hpp"
 #include "portmacro.h"
 #ifdef HAL_FDCAN_MODULE_ENABLED
 

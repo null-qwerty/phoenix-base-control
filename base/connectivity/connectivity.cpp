@@ -29,7 +29,7 @@ EsfStatus Connectivity<Derived, Message>::popFromReceiveQueue(Message &message)
 }
 
 template <typename Derived, typename Message>
-Connectivity<Derived, Message> Connectivity<Derived, Message>::setReceiveDataSize(size_t size)
+Connectivity<Derived, Message> &Connectivity<Derived, Message>::setReceiveDataSize(size_t size)
 {
     m_receiveData.write().size = size;
     return *this;

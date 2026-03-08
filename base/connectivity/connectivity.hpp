@@ -66,7 +66,7 @@ public:
      * @param size 接收数据大小，单位为字节
      * @return Connectivity<Derived> 返回当前实例的引用，便于链式调用
      */
-    Connectivity<Derived, Message> setReceiveDataSize(size_t size);
+    Connectivity<Derived, Message> &setReceiveDataSize(size_t size);
     /**
      * @brief 设置接收回调函数
      *

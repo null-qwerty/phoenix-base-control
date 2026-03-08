@@ -1,6 +1,6 @@
 #pragma once
 
-#include "connectivity/uart.hpp"
+#include "connectivity/connectivity.hpp"
 
 namespace esf
 {
@@ -51,6 +51,7 @@ struct Dt7Protocol {
 template <typename ConnectivityType>
 class Dt7 : public WithConnectivity<ConnectivityType> {
 public:
+    using ConnectivityMessageType = typename ConnectivityType::Message; // 消息类型定义
     /**
      * @brief 构造函数，接受一个 Connectivity 实例作为通信接口
      *

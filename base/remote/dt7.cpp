@@ -26,7 +26,7 @@ Dt7Protocol &Dt7<ConnectivityType>::data()
 template <typename ConnectivityType>
 Dt7<ConnectivityType> &Dt7<ConnectivityType>::decode()
 {
-    UartMessage msg;
+    ConnectivityMessageType msg;
     this->m_status = this->m_connectivity.popFromReceiveQueue(msg);
     if (msg.size != 18) {
         return *this; // 数据长度不正确，返回当前对象

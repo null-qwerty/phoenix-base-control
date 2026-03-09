@@ -3,9 +3,8 @@
 namespace esf
 {
 Thread::Thread(void (*func)(void *), const char *name, uint16_t stack_size, void *params, UBaseType_t priority)
-    : m_func(func)
 {
-    xTaskCreate(m_func, name, stack_size * sizeof(StackType_t), params, priority, &m_handle);
+    xTaskCreate(func, name, stack_size * sizeof(StackType_t), params, priority, &m_handle);
     vTaskSuspend(m_handle);
 }
 
@@ -30,6 +29,18 @@ Thread &Thread::suspend()
     return *this;
 }
 
+Thread &Thread::sleep(size_t ms)
+{
+    osDelay(ms);
+    return *this;
+}
+
+Thread &Thread::sleep_for(size_t ms)
+{
+    osDelayUntil(ms);
+    return *this;
+}
+
 void Thread::join(Thread &thread)
 {
     thread.join();
@@ -38,6 +49,12 @@ void Thread::join(Thread &thread)
 void Thread::suspend(Thread &thread)
 {
     thread.suspend();
+}
+
+Thread Thread::this_thread()
+{
+    auto handle = xTaskGetCurrentTaskHandle();
+    return Thread(handle);
 }
 
 } // namespace esf

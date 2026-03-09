@@ -10,3 +10,4 @@ add_subdirectory(sensor)
 
 add_library(esf_base INTERFACE)
 target_link_libraries(esf_base INTERFACE connectivity remote sensor)
+target_include_directories(esf_base INTERFACE ${ESF_BASE_DIR})

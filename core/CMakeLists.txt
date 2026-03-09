@@ -9,5 +9,5 @@ file(GLOB_RECURSE ESF_CORE_SOURCES
     "${ESF_CORE_DIR}/*.cpp"
 )
 
-add_library(esf_core SHARED ${ESF_CORE_SOURCES})
+add_library(esf_core STATIC ${ESF_CORE_SOURCES})
 target_include_directories(esf_core PUBLIC ${ESF_CORE_DIR})

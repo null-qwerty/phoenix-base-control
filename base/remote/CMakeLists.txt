@@ -8,6 +8,6 @@ file(GLOB_RECURSE REMOTE_SOURCES
     "${REMOTE_DIR}/*.cpp"
 )
 
-add_library(remote SHARED ${REMOTE_SOURCES})
+add_library(remote STATIC ${REMOTE_SOURCES})
 target_include_directories(remote PUBLIC ${REMOTE_DIR} connectivity)
 target_link_libraries(remote PUBLIC connectivity)

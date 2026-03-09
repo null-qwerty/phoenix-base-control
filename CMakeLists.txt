@@ -11,5 +11,5 @@ add_subdirectory(FreeRTOS)
 add_subdirectory(base)
 
 add_library(esf INTERFACE)
-target_link_libraries(esf INTERFACE esf_core esf_freertos)
-target_include_directories(esf INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/core)
+target_link_libraries(esf INTERFACE esf_core esf_freertos esf_base)
+target_include_directories(esf INTERFACE ${ESF_ROOT_DIR} esf_core esf_freertos esf_base)

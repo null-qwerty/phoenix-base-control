@@ -31,7 +31,7 @@ BMI088<ConnectivityType> &BMI088<ConnectivityType>::setGyroCalib(float k_yaw, fl
 }
 
 template <typename ConnectivityType>
-typename BMI088<ConnectivityType>::Data &BMI088<ConnectivityType>::data()
+Bmi088Data &BMI088<ConnectivityType>::data()
 {
     return m_data;
 }
@@ -54,7 +54,7 @@ EsfStatus BMI088<ConnectivityType>::readData()
         errcode = errcode == ESF_SUCCESS ? m_temprature_status : ESF_MULTIPLE_ERROR;
     }
     this->_calibrateGyro(); // 矫正角速度
-    return *this;
+    return errcode;
 }
 
 template <typename ConnectivityType>
@@ -207,9 +207,9 @@ BMI088<ConnectivityType> &BMI088<ConnectivityType>::_calibrateGyro()
     if (m_gyro_status != ESF_SUCCESS || m_temprature_status != ESF_SUCCESS) {
         return *this;
     }
-    m_data.gyro.yaw = m_gyroCalib.k_yaw * m_data.gyro.temperature + m_gyroCalib.b_yaw;
-    m_data.gyro.pitch = m_gyroCalib.k_pitch * m_data.gyro.temperature + m_gyroCalib.b_pitch;
-    m_data.gyro.roll = m_gyroCalib.k_roll * m_data.gyro.temperature + m_gyroCalib.b_roll;
+    m_data.gyro.yaw = m_gyroCalib.k_yaw * m_data.temperature + m_gyroCalib.b_yaw;
+    m_data.gyro.pitch = m_gyroCalib.k_pitch * m_data.temperature + m_gyroCalib.b_pitch;
+    m_data.gyro.roll = m_gyroCalib.k_roll * m_data.temperature + m_gyroCalib.b_roll;
     return *this;
 }
 
@@ -264,6 +264,7 @@ EsfStatus BMI088<SPI>::_readByte(uint8_t reg, uint8_t *buf, size_t len)
     EsfStatus errcode = ESF_SUCCESS;
     // 由于接收函数是阻塞的，reg 变量不会被回收，直接使用其地址
     errcode = this->m_connectivity.pushToSendQueue({ &reg, 1 });
+    errcode = this->m_connectivity.sendMessage();
     if (errcode != ESF_SUCCESS) {
         return errcode;
     }
@@ -289,11 +290,13 @@ EsfStatus BMI088<SPI>::_writeByte(uint8_t reg, uint8_t data)
     s_bmi088_send_buf[1] = data;
     EsfStatus errcode = ESF_SUCCESS;
     errcode = this->m_connectivity.pushToSendQueue({ s_bmi088_send_buf, 2 });
+    errcode = this->m_connectivity.sendMessage();
     if (errcode != ESF_SUCCESS) {
         return errcode;
     }
     return errcode;
 }
+template class BMI088<SPI>;
 #endif
 
 } // namespace base

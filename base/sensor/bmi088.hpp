@@ -11,6 +11,23 @@ namespace esf
 namespace base
 {
 /**
+ * @brief BMI088 数据格式
+ *
+ */
+struct Bmi088Data {
+    struct {
+        float x = 0;
+        float y = 0;
+        float z = 0;
+    } accel;
+    struct {
+        float yaw = 0;
+        float pitch = 0;
+        float roll = 0;
+    } gyro;
+    float temperature = 0;
+};
+/**
  * @brief BMI088 接口，用于驱动 BMI088
  *
  * @tparam ConnectivityType 通信方式，已实现 SPI
@@ -20,23 +37,6 @@ namespace base
 template <typename ConnectivityType>
 class BMI088 : public WithConnectivity<ConnectivityType> {
 public:
-    /**
-     * @brief BMI088 数据格式
-     *
-     */
-    struct Data {
-        struct {
-            float x = 0;
-            float y = 0;
-            float z = 0;
-        } acc;
-        struct {
-            float yaw = 0;
-            float pitch = 0;
-            float roll = 0;
-        } gyro;
-        float temperature = 0;
-    };
     using ConnectivityMessageType = typename ConnectivityType::Message; // 消息类型定义
 
     /**
@@ -72,7 +72,7 @@ public:
      *
      * @return Data& 传感器数据
      */
-    Data &data();
+    Bmi088Data &data();
     /**
      * @brief 从传感器读取数据
      *
@@ -81,7 +81,7 @@ public:
     EsfStatus readData();
 
 private:
-    Data m_data; // 传感器数据
+    Bmi088Data m_data; // 传感器数据
 
     uint8_t *m_accBuf, *m_gyroBuf, *m_tempBuf; // 通信消息缓冲区指针
     uint8_t m_accChipId, m_gyroChipId; // 片选 id

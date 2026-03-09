@@ -37,14 +37,20 @@ public:
      * @param type 通信类型
      * @return EsfStatus 成功返回 ESF_SUCCESS(0)，其他情况参考 core/status.hpp
      */
-    virtual EsfStatus sendMessage() final;
+    virtual EsfStatus sendMessage() final
+    {
+        return static_cast<Derived *>(this)->_sendMessageImpl();
+    }
     /**
      * @brief 接收消息接口
      *
      * @param type 通信类型
      * @return EsfStatus 成功返回 ESF_SUCCESS(0)，其他情况参考 core/status.hpp
      */
-    virtual EsfStatus receiveMessage() final;
+    virtual EsfStatus receiveMessage() final
+    {
+        return static_cast<Derived *>(this)->_receiveMessageImpl();
+    }
 
     /**
      * @brief 向发送队列添加消息
@@ -52,28 +58,42 @@ public:
      * @param message 需要添加的消息
      * @return EsfStatus 成功返回 ESF_SUCCESS(0)，其他情况参考 core/status.hpp
      */
-    EsfStatus pushToSendQueue(Message message);
+    EsfStatus pushToSendQueue(Message message)
+    {
+        return this->read_queue.push(message);
+    }
     /**
      * @brief 从接收队列弹出消息
      *
      * @param message 消息存放的位置
      * @return EsfStatus 成功返回 ESF_SUCCESS(0)，其他情况参考 core/status.hpp
      */
-    EsfStatus popFromReceiveQueue(Message &message);
+    EsfStatus popFromReceiveQueue(Message &message)
+    {
+        return this->write_queue.pop(message);
+    }
     /**
      * @brief 设置接收数据大小
      *
      * @param size 接收数据大小，单位为字节
      * @return Connectivity<Derived> 返回当前实例的引用，便于链式调用
      */
-    Connectivity<Derived, Message> &setReceiveDataSize(size_t size);
+    Connectivity<Derived, Message> &setReceiveDataSize(size_t size)
+    {
+        m_receiveData.write().size = size;
+        return *this;
+    }
     /**
      * @brief 设置接收回调函数
      *
      * @param callback 接收回调函数，参数为 BaseType_t*，用于指示是否需要切换到更高优先级的任务
      * @return EsfStatus 成功返回 ESF_SUCCESS(0)，其他情况参考 core/status.hpp
      */
-    EsfStatus setRxCallback(std::function<EsfStatus(BaseType_t *)> &callback);
+    EsfStatus setRxCallback(std::function<EsfStatus(Message &)> callback)
+    {
+        m_rxCallbackFunc = callback;
+        return ESF_SUCCESS;
+    }
 
 protected:
     Connectivity() = default;

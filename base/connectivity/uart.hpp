@@ -25,6 +25,7 @@ public:
 
     UART &init();
 
+    friend Connectivity;
     friend void ::HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size);
 
 private:

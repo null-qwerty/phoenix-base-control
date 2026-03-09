@@ -22,6 +22,7 @@ public:
     ~SPI() = default;
     SPI &init();
 
+    friend Connectivity;
     friend void ::HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi);
     friend void ::HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi);
 

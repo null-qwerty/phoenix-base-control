@@ -20,12 +20,20 @@ public:
      *
      * @param length 队列长度
      */
-    Queue(size_t length);
+    Queue(size_t length)
+        : m_queueHandle(xQueueCreate(length, sizeof(T)))
+    {
+    }
     /**
      * @brief 析构函数
      *
      */
-    ~Queue();
+    ~Queue()
+    {
+        if (m_queueHandle) {
+            vQueueDelete(m_queueHandle);
+        }
+    }
 
     /**
      * @brief 向队列尾添加元素
@@ -34,7 +42,11 @@ public:
      * @param ticksToWait 超时时间，默认 0
      * @return EsfStatus 成功返回 ESF_SUCCESS(0)，其他情况参考 core/status.hpp
      */
-    EsfStatus push(const T &item, TickType_t ticksToWait = 0);
+    EsfStatus push(const T &item, TickType_t ticksToWait = 0)
+    {
+        auto err = xQueueSend(m_queueHandle, &item, ticksToWait);
+        return err == pdPASS ? ESF_SUCCESS : (err == errQUEUE_FULL ? ESF_QUEUE_FULL : ESF_TIMEOUT);
+    }
     /**
      * @brief 从队列头弹出元素
      *
@@ -42,7 +54,11 @@ public:
      * @param ticksToWait 超时时间，默认 0
      * @return EsfStatus 成功返回 ESF_SUCCESS(0)，其他情况参考 core/status.hpp
      */
-    EsfStatus pop(T &item, TickType_t ticksToWait = 0);
+    EsfStatus pop(T &item, TickType_t ticksToWait = 0)
+    {
+        auto err = xQueueReceive(m_queueHandle, &item, ticksToWait);
+        return err == pdPASS ? ESF_SUCCESS : (err == errQUEUE_EMPTY ? ESF_QUEUE_EMPTY : ESF_TIMEOUT);
+    }
 
     /**
      * @brief 从中断向队列尾添加元素
@@ -51,8 +67,33 @@ public:
      * @param pxHigherPriorityTaskWoken 退出后是否调用高优先级任务
      * @return EsfStatus 成功返回 ESF_SUCCESS(0)，其他情况参考 core/status.hpp
      */
-    EsfStatus pushFromISR(const T &item, BaseType_t *pxHigherPriorityTaskWoken = nullptr);
-    EsfStatus popFromISR(T &item, BaseType_t *pxHigherPriorityTaskWoken = nullptr);
+    EsfStatus pushFromISR(const T &item, BaseType_t *pxHigherPriorityTaskWoken = nullptr)
+    {
+        if (pxHigherPriorityTaskWoken == nullptr) {
+            BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+            auto err = xQueueSendFromISR(m_queueHandle, &item, &xHigherPriorityTaskWoken);
+            return err == pdPASS ? ESF_SUCCESS : ESF_TIMEOUT;
+        }
+        auto err = xQueueSendFromISR(m_queueHandle, &item, pxHigherPriorityTaskWoken);
+        return err == pdPASS ? ESF_SUCCESS : ESF_TIMEOUT;
+    }
+    /**
+     * @brief 从队列头弹出元素到中断
+     *
+     * @param item 弹出元素存放的位置
+     * @param pxHigherPriorityTaskWoken 退出后是否调用高优先级任务
+     * @return EsfStatus 成功返回 ESF_SUCCESS(0)，其他情况参考 core/status.hpp
+     */
+    EsfStatus popFromISR(T &item, BaseType_t *pxHigherPriorityTaskWoken = nullptr)
+    {
+        if (pxHigherPriorityTaskWoken == nullptr) {
+            BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+            auto err = xQueueReceiveFromISR(m_queueHandle, &item, &xHigherPriorityTaskWoken);
+            return err == pdPASS ? ESF_SUCCESS : ESF_TIMEOUT;
+        }
+        auto err = xQueueReceiveFromISR(m_queueHandle, &item, pxHigherPriorityTaskWoken);
+        return err == pdPASS ? ESF_SUCCESS : ESF_TIMEOUT;
+    }
 
 private:
     QueueHandle_t m_queueHandle; // 队列 handle

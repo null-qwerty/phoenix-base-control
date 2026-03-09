@@ -45,6 +45,7 @@ public:
      * @return FDCAN& 自身引用
      */
     FDCAN &init();
+    friend Connectivity;
     // 将接收回调设置为友元函数，以便在中断回调中访问类的接收回调函数
     friend void ::HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs);
     friend void ::HAL_FDCAN_RxFifo1Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo1ITs);

@@ -30,8 +30,8 @@ private:
     // 全局 SPI 实例映射，便于在中断回调中找到对应的实例
     static std::map<SPI_TypeDef *, SPI *> spi_map;
     // 实现 Connectivity 接口的发送函数
-    EsfStatus _sendMessageImpl(MessageType type);
-    EsfStatus _receiveMessageImpl(MessageType type);
+    EsfStatus _sendMessageImpl();
+    EsfStatus _receiveMessageImpl();
 
     EsfStatus _rxCallback(uint16_t size);
 };

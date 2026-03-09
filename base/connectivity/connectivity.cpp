@@ -5,15 +5,15 @@ namespace esf
 namespace base
 {
 template <typename Derived, typename Message>
-EsfStatus Connectivity<Derived, Message>::sendMessage(MessageType type)
+EsfStatus Connectivity<Derived, Message>::sendMessage()
 {
-    return static_cast<Derived *>(this)->sendMessageImpl(type);
+    return static_cast<Derived *>(this)->sendMessageImpl();
 }
 
 template <typename Derived, typename Message>
-EsfStatus Connectivity<Derived, Message>::receiveMessage(MessageType type)
+EsfStatus Connectivity<Derived, Message>::receiveMessage()
 {
-    return static_cast<Derived *>(this)->receiveMessageImpl(type);
+    return static_cast<Derived *>(this)->receiveMessageImpl();
 }
 
 template <typename Derived, typename Message>

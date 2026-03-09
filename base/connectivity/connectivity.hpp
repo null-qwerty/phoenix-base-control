@@ -29,7 +29,7 @@ namespace base
 template <typename Derived, typename Message = typename Derived::Message>
 class Connectivity : public ReadQueueBase<Message>, public WriteQueueBase<Message> {
 public:
-    enum class MessageType : uint8_t { DATA_STREAM = 0, CAN_STD, CAN_EXT, UART, SPI, I2C, RS485, COUNT };
+    // enum class MessageType : uint8_t { DATA_STREAM = 0, CAN_STD, CAN_EXT, UART, SPI, I2C, RS485, COUNT };
 
     /**
      * @brief 发送消息接口
@@ -37,14 +37,14 @@ public:
      * @param type 通信类型
      * @return EsfStatus 成功返回 ESF_SUCCESS(0)，其他情况参考 core/status.hpp
      */
-    virtual EsfStatus sendMessage(MessageType type) final;
+    virtual EsfStatus sendMessage() final;
     /**
      * @brief 接收消息接口
      *
      * @param type 通信类型
      * @return EsfStatus 成功返回 ESF_SUCCESS(0)，其他情况参考 core/status.hpp
      */
-    virtual EsfStatus receiveMessage(MessageType type) final;
+    virtual EsfStatus receiveMessage() final;
 
     /**
      * @brief 向发送队列添加消息

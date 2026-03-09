@@ -33,8 +33,8 @@ private:
     static std::map<USART_TypeDef *, UART *> uart_map;
 
     // 实现 Connectivity 接口的发送函数
-    EsfStatus _sendMessageImpl(MessageType type);
-    EsfStatus _receiveMessageImpl(MessageType type);
+    EsfStatus _sendMessageImpl();
+    EsfStatus _receiveMessageImpl();
 
     EsfStatus _rxCallback(uint16_t size);
 };

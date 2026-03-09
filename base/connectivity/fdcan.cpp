@@ -55,7 +55,7 @@ FDCAN &FDCAN::init()
     return *this;
 }
 
-EsfStatus FDCAN::_sendMessageImpl(MessageType type)
+EsfStatus FDCAN::_sendMessageImpl()
 {
     FDCAN_TxHeaderTypeDef tx_header = { 0 };
     // 从发送队列中获取消息进行发送
@@ -65,7 +65,7 @@ EsfStatus FDCAN::_sendMessageImpl(MessageType type)
         return m_sendErrCode;
     }
 
-    tx_header.IdType = (type == MessageType::CAN_EXT) ? FDCAN_EXTENDED_ID : FDCAN_STANDARD_ID;
+    tx_header.IdType = (message.is_ext == true) ? FDCAN_EXTENDED_ID : FDCAN_STANDARD_ID;
     tx_header.Identifier = message.id;
     tx_header.TxFrameType = FDCAN_DATA_FRAME;
     tx_header.DataLength = (message.size <= 8) ? FDCAN_DLC_BYTES_8 : FDCAN_DLC_BYTES_64;
@@ -78,11 +78,9 @@ EsfStatus FDCAN::_sendMessageImpl(MessageType type)
     return m_sendErrCode;
 }
 
-EsfStatus FDCAN::_receiveMessageImpl(MessageType type)
+EsfStatus FDCAN::_receiveMessageImpl()
 {
     FDCAN_RxHeaderTypeDef rx_header = { 0 };
-
-    rx_header.IdType = (type == MessageType::CAN_EXT) ? FDCAN_EXTENDED_ID : FDCAN_STANDARD_ID;
 
     auto halerrcode = HAL_FDCAN_GetRxMessage(
         m_handle, (m_filter->FilterConfig == FDCAN_FILTER_TO_RXFIFO0) ? FDCAN_RX_FIFO0 : FDCAN_RX_FIFO1, &rx_header,
@@ -93,6 +91,7 @@ EsfStatus FDCAN::_receiveMessageImpl(MessageType type)
     }
     m_receiveData.write().id = rx_header.Identifier;
     m_receiveData.write().size = (rx_header.DataLength > 8) ? 64 : rx_header.DataLength; // FDCAN DLC 转换为实际字节
+    m_receiveData.write().is_ext = rx_header.IdType == FDCAN_EXTENDED_ID ? true : false;
     m_receiveData.swap(); // 切换缓冲区，准备接收下一条消息
     // 将接收到的消息写入接收队列
     m_receiveErrCode = this->write_queue.push(m_receiveData.read());

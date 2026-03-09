@@ -267,7 +267,7 @@ EsfStatus BMI088<SPI>::_readByte(uint8_t reg, uint8_t *buf, size_t len)
     if (errcode != ESF_SUCCESS) {
         return errcode;
     }
-    errcode = this->m_connectivity.setReceiveDataSize(len).receiveMessage(SPI::MessageType::SPI); // 阻塞接收
+    errcode = this->m_connectivity.setReceiveDataSize(len).receiveMessage(); // 阻塞接收
     if (errcode != ESF_SUCCESS) {
         return errcode;
     }

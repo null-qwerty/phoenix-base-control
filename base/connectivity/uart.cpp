@@ -156,7 +156,7 @@ UART &UART::init()
     return *this;
 }
 
-EsfStatus UART::_sendMessageImpl(MessageType type)
+EsfStatus UART::_sendMessageImpl()
 {
     // 从发送队列中获取消息进行发送
     Message message;
@@ -171,7 +171,7 @@ EsfStatus UART::_sendMessageImpl(MessageType type)
     return m_sendErrCode;
 }
 
-EsfStatus UART::_receiveMessageImpl(MessageType type)
+EsfStatus UART::_receiveMessageImpl()
 {
     return ESF_SUCCESS;
 }

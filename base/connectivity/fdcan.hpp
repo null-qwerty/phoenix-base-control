@@ -17,6 +17,7 @@ struct FdcanMessage {
     uint8_t *data;
     size_t size;
     uint32_t id;
+    bool is_ext;
 };
 /**
  * @brief fdcan 通信类，继承自 Connectivity，使用 CRTP 模式实现
@@ -56,8 +57,8 @@ private:
     static std::map<FDCAN_GlobalTypeDef *, FDCAN *> fdcan_map;
 
     // 实现 Connectivity 接口的发送和接收函数
-    EsfStatus _sendMessageImpl(MessageType type);
-    EsfStatus _receiveMessageImpl(MessageType type);
+    EsfStatus _sendMessageImpl();
+    EsfStatus _receiveMessageImpl();
 
     EsfStatus _rxCallback();
 };

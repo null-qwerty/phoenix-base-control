@@ -67,7 +67,7 @@ SPI &SPI::init()
     return *this;
 }
 
-EsfStatus SPI::_sendMessageImpl(MessageType type)
+EsfStatus SPI::_sendMessageImpl()
 {
     // 从发送队列中获取消息进行发送
     Message message;
@@ -82,7 +82,7 @@ EsfStatus SPI::_sendMessageImpl(MessageType type)
     return m_sendErrCode;
 }
 
-EsfStatus SPI::_receiveMessageImpl(MessageType type)
+EsfStatus SPI::_receiveMessageImpl()
 {
     // 阻塞式接收
     auto errcode = HAL_SPI_Receive(m_handle, m_receiveData.write().data, m_receiveData.write().size, HAL_MAX_DELAY);

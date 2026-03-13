@@ -134,9 +134,9 @@ template <typename ConnectivityType> EsfStatus BMI088<ConnectivityType>::_readAc
         return m_acc_status;
     }
 
-    m_data.accel.x = (int16_t)((m_accBuf[2] << 8) | m_accBuf[1]) * BMI088_ACC_SEN;
-    m_data.accel.y = (int16_t)((m_accBuf[4] << 8) | m_accBuf[3]) * BMI088_ACC_SEN;
-    m_data.accel.z = (int16_t)((m_accBuf[6] << 8) | m_accBuf[5]) * BMI088_ACC_SEN;
+    m_data.accel.x = static_cast<int16_t>((m_accBuf[2] << 8) | m_accBuf[1]) * BMI088_ACC_SEN;
+    m_data.accel.y = static_cast<int16_t>((m_accBuf[4] << 8) | m_accBuf[3]) * BMI088_ACC_SEN;
+    m_data.accel.z = static_cast<int16_t>((m_accBuf[6] << 8) | m_accBuf[5]) * BMI088_ACC_SEN;
 
     return m_acc_status;
 }
@@ -175,9 +175,9 @@ template <typename ConnectivityType> EsfStatus BMI088<ConnectivityType>::_readGy
         return m_gyro_status;
     }
 
-    m_data.gyro.roll = (int16_t)((m_gyroBuf[1] << 8) | m_gyroBuf[0]) * BMI088_GYRO_SEN;
-    m_data.gyro.pitch = (int16_t)((m_gyroBuf[3] << 8) | m_gyroBuf[2]) * BMI088_GYRO_SEN;
-    m_data.gyro.yaw = (int16_t)((m_gyroBuf[5] << 8) | m_gyroBuf[4]) * BMI088_GYRO_SEN;
+    m_data.gyro.roll = static_cast<int16_t>((m_gyroBuf[1] << 8) | m_gyroBuf[0]) * BMI088_GYRO_SEN;
+    m_data.gyro.pitch = static_cast<int16_t>((m_gyroBuf[3] << 8) | m_gyroBuf[2]) * BMI088_GYRO_SEN;
+    m_data.gyro.yaw = static_cast<int16_t>((m_gyroBuf[5] << 8) | m_gyroBuf[4]) * BMI088_GYRO_SEN;
 
     return m_gyro_status;
 }
@@ -190,10 +190,11 @@ template <typename ConnectivityType> EsfStatus BMI088<ConnectivityType>::_readTe
         return m_temprature_status;
     }
 
-    int16_t temp = ((int16_t)(m_tempBuf[1] << 3) | (m_tempBuf[2] >> 5));
-    if (temp > 1023)
+    int16_t temp = static_cast<int16_t>((m_tempBuf[1] << 3)) | (m_tempBuf[2] >> 5);
+    if (temp > 1023) {
         temp -= 2048;
-    m_data.temperature = temp * 0.125f + 23.0f;
+    }
+    m_data.temperature = static_cast<float>(temp) * 0.125f + 23.0f;
 
     return m_temprature_status;
 }

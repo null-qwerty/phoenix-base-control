@@ -77,23 +77,23 @@
 #define BMI088_READ 0x80
 #define BMI088_WRITE 0x00
 
-#ifndef CS1_Accel_GPIO_Port
-#define CS1_Accel_GPIO_Port 0
+#ifndef CS1_ACCEL_GPIO_Port
+#define CS1_ACCEL_GPIO_Port 0
 #endif
-#ifndef CS1_Accel_Pin
-#define CS1_Accel_Pin 0
+#ifndef CS1_ACCEL_Pin
+#define CS1_ACCEL_Pin 0
 #endif
-#ifndef CS1_Gyro_GPIO_Port
-#define CS1_Gyro_GPIO_Port 0
+#ifndef CS1_GYRO_GPIO_Port
+#define CS1_GYRO_GPIO_Port 0
 #endif
-#ifndef CS1_Gyro_Pin
-#define CS1_Gyro_Pin 0
+#ifndef CS1_GYRO_Pin
+#define CS1_GYRO_Pin 0
 #endif
 
-#define ENABLE_ACC() HAL_GPIO_WritePin(CS1_Accel_GPIO_Port, CS1_Accel_Pin, GPIO_PIN_RESET)
-#define DISABLE_ACC() HAL_GPIO_WritePin(CS1_Accel_GPIO_Port, CS1_Accel_Pin, GPIO_PIN_SET)
-#define ENABLE_GYRO() HAL_GPIO_WritePin(CS1_Gyro_GPIO_Port, CS1_Gyro_Pin, GPIO_PIN_RESET)
-#define DISABLE_GYRO() HAL_GPIO_WritePin(CS1_Gyro_GPIO_Port, CS1_Gyro_Pin, GPIO_PIN_SET)
+#define ENABLE_ACC() HAL_GPIO_WritePin(CS1_ACCEL_GPIO_Port, CS1_ACCEL_Pin, GPIO_PIN_RESET)
+#define DISABLE_ACC() HAL_GPIO_WritePin(CS1_ACCEL_GPIO_Port, CS1_ACCEL_Pin, GPIO_PIN_SET)
+#define ENABLE_GYRO() HAL_GPIO_WritePin(CS1_GYRO_GPIO_Port, CS1_GYRO_Pin, GPIO_PIN_RESET)
+#define DISABLE_GYRO() HAL_GPIO_WritePin(CS1_GYRO_GPIO_Port, CS1_GYRO_Pin, GPIO_PIN_SET)
 
 #define BMI088_ACC_3G_SEN 0.0008974358974f
 #define BMI088_ACC_6G_SEN 0.00179443359375f

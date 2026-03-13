@@ -11,15 +11,18 @@ BMI088<ConnectivityType>::BMI088(ConnectivityType &connectivity)
 {
 }
 
-template <typename ConnectivityType>
-BMI088<ConnectivityType> &BMI088<ConnectivityType>::init()
+template <typename ConnectivityType> BMI088<ConnectivityType> &BMI088<ConnectivityType>::init()
 {
     return _initAcc()._initGyro();
 }
 
 template <typename ConnectivityType>
-BMI088<ConnectivityType> &BMI088<ConnectivityType>::setGyroCalib(float k_yaw, float k_pitch, float k_roll, float b_yaw,
-                                                                 float b_pitch, float b_roll)
+BMI088<ConnectivityType> &BMI088<ConnectivityType>::setGyroCalib(float k_yaw,
+                                                                 float k_pitch,
+                                                                 float k_roll,
+                                                                 float b_yaw,
+                                                                 float b_pitch,
+                                                                 float b_roll)
 {
     m_gyroCalib.k_yaw = k_yaw;
     m_gyroCalib.k_pitch = k_pitch;
@@ -30,14 +33,12 @@ BMI088<ConnectivityType> &BMI088<ConnectivityType>::setGyroCalib(float k_yaw, fl
     return *this;
 }
 
-template <typename ConnectivityType>
-Bmi088Data &BMI088<ConnectivityType>::data()
+template <typename ConnectivityType> Bmi088Data &BMI088<ConnectivityType>::data()
 {
     return m_data;
 }
 
-template <typename ConnectivityType>
-EsfStatus BMI088<ConnectivityType>::readData()
+template <typename ConnectivityType> EsfStatus BMI088<ConnectivityType>::readData()
 {
     EsfStatus errcode = ESF_SUCCESS;
     this->_readAcc(); // 读加速度计
@@ -57,8 +58,7 @@ EsfStatus BMI088<ConnectivityType>::readData()
     return errcode;
 }
 
-template <typename ConnectivityType>
-BMI088<ConnectivityType> &BMI088<ConnectivityType>::_initAcc()
+template <typename ConnectivityType> BMI088<ConnectivityType> &BMI088<ConnectivityType>::_initAcc()
 {
     _readDataFromAcc(BMI088_CHIP_ID_REG, &m_accChipId);
     _readDataFromAcc(BMI088_CHIP_ID_REG, &m_accChipId);
@@ -68,7 +68,8 @@ BMI088<ConnectivityType> &BMI088<ConnectivityType>::_initAcc()
     // 设置加速度计量程为 ±3g，带宽为正常模式，输出数据速率为 1600Hz
     _writeDataToAcc(BMI088_ACC_RANGE_REG, BMI088_ACC_RANGE_3G);
     HAL_Delay(1);
-    _writeDataToAcc(BMI008_ACC_CONF_REG, (1 << 7) | (BMI088_ACC_CONF_BWP_NORM << 4) | (BMI088_ACC_CONF_ODR_1600_Hz));
+    _writeDataToAcc(BMI008_ACC_CONF_REG,
+                    (1 << 7) | (BMI088_ACC_CONF_BWP_NORM << 4) | (BMI088_ACC_CONF_ODR_1600_Hz));
     // 设置加速度计为激活状态
     _writeDataToAcc(BMI088_ACC_PWR_CTRL_REG, BMI088_ACC_PWR_CTRL_ON);
     HAL_Delay(1);
@@ -78,8 +79,7 @@ BMI088<ConnectivityType> &BMI088<ConnectivityType>::_initAcc()
     return *this;
 }
 
-template <typename ConnectivityType>
-BMI088<ConnectivityType> &BMI088<ConnectivityType>::_initGyro()
+template <typename ConnectivityType> BMI088<ConnectivityType> &BMI088<ConnectivityType>::_initGyro()
 {
     _readDataFromGyro(BMI088_CHIP_ID_REG, &m_gyroChipId);
     _readDataFromGyro(BMI088_CHIP_ID_REG, &m_gyroChipId);
@@ -95,8 +95,7 @@ BMI088<ConnectivityType> &BMI088<ConnectivityType>::_initGyro()
     return *this;
 }
 
-template <typename ConnectivityType>
-EsfStatus BMI088<ConnectivityType>::_readAcc()
+template <typename ConnectivityType> EsfStatus BMI088<ConnectivityType>::_readAcc()
 {
     /*
      * 和读取角速度一样，加速度数据也可一次性读取，但第一个字节是无效的。
@@ -141,8 +140,7 @@ EsfStatus BMI088<ConnectivityType>::_readAcc()
 
     return m_acc_status;
 }
-template <typename ConnectivityType>
-EsfStatus BMI088<ConnectivityType>::_readGyro()
+template <typename ConnectivityType> EsfStatus BMI088<ConnectivityType>::_readGyro()
 {
     /*
      * 保持 CSB 为低电平，可以一次性读取所有的角速度数据，参考 BMI088
@@ -183,8 +181,7 @@ EsfStatus BMI088<ConnectivityType>::_readGyro()
 
     return m_gyro_status;
 }
-template <typename ConnectivityType>
-EsfStatus BMI088<ConnectivityType>::_readTemprature()
+template <typename ConnectivityType> EsfStatus BMI088<ConnectivityType>::_readTemprature()
 {
     // 同加速度计，第一个字节是无效的
     m_temprature_status = ESF_SUCCESS;
@@ -257,8 +254,7 @@ namespace esf
 {
 namespace base
 {
-template <>
-EsfStatus BMI088<SPI>::_readByte(uint8_t reg, uint8_t *buf, size_t len)
+template <> EsfStatus BMI088<SPI>::_readByte(uint8_t reg, uint8_t *buf, size_t len)
 {
     reg |= BMI088_READ;
     EsfStatus errcode = ESF_SUCCESS;
@@ -268,21 +264,15 @@ EsfStatus BMI088<SPI>::_readByte(uint8_t reg, uint8_t *buf, size_t len)
     if (errcode != ESF_SUCCESS) {
         return errcode;
     }
-    errcode = this->m_connectivity.setReceiveDataSize(len).receiveMessage(); // 阻塞接收
+    errcode = this->m_connectivity.pushToReceiveQueue({ .data = buf, .size = len });
+    errcode = this->m_connectivity.receiveMessage();
     if (errcode != ESF_SUCCESS) {
         return errcode;
     }
-    ConnectivityMessageType msg;
-    errcode = this->m_connectivity.popFromReceiveQueue(msg);
-    if (errcode != ESF_SUCCESS) {
-        return errcode;
-    }
-    buf = msg.data;
     return errcode;
 }
 
-template <>
-EsfStatus BMI088<SPI>::_writeByte(uint8_t reg, uint8_t data)
+template <> EsfStatus BMI088<SPI>::_writeByte(uint8_t reg, uint8_t data)
 {
     reg |= BMI088_WRITE;
     static uint8_t s_bmi088_send_buf[2]; // 防止局部变量被回收导致段错误，此处设置为静态变量

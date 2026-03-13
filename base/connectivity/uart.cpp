@@ -1,4 +1,5 @@
 #include "uart.hpp"
+#include "status.hpp"
 
 #ifdef HAL_UART_MODULE_ENABLED
 
@@ -80,10 +81,6 @@ UART::UART(UART_HandleTypeDef &handle)
     : m_handle(&handle)
 {
     uart_map[handle.Instance] = this; // 将 UART 实例添加到映射中
-    // 初始化接收数据缓冲区
-    m_receiveData.read().data = new uint8_t[128];
-    m_receiveData.swap();
-    m_receiveData.read().data = new uint8_t[128];
 }
 
 UART &UART::init()
@@ -151,8 +148,6 @@ UART &UART::init()
 #endif
     // 启动 UART 空闲中断
     __HAL_UART_ENABLE_IT(m_handle, UART_IT_IDLE);
-    // 启动 UART 接收 DMA
-    HAL_UART_Receive_DMA(m_handle, m_receiveData.write().data, 128);
     return *this;
 }
 
@@ -160,9 +155,9 @@ EsfStatus UART::_sendMessageImpl()
 {
     // 从发送队列中获取消息进行发送
     Message message;
-    m_sendErrCode = this->read_queue.pop(message);
-    if (m_sendErrCode != ESF_SUCCESS) {
-        return m_sendErrCode;
+    this->m_sendErrCode = this->read_queue.pop(message);
+    if (this->m_sendErrCode != ESF_SUCCESS) {
+        return this->m_sendErrCode;
     }
     // 发送消息
     if (HAL_UART_Transmit_DMA(m_handle, message.data, message.size) != HAL_OK) {
@@ -173,23 +168,40 @@ EsfStatus UART::_sendMessageImpl()
 
 EsfStatus UART::_receiveMessageImpl()
 {
+    // 从接收队列中获取接收消息的信息
+    Message message;
+    this->m_receiveErrCode = this->write_queue.pop(message);
+    if (this->m_sendErrCode != ESF_SUCCESS) {
+        return this->m_sendErrCode;
+    }
+    // 接收消息
+    if (HAL_UART_Receive_DMA(m_handle, message.data, message.size) != HAL_OK) {
+        return (this->m_receiveErrCode = ESF_CONNECTIVITY_RECEIVE_ERROR);
+    }
+    // 记录到缓冲区，用于中断
+    this->m_receiveData = message;
+
     return ESF_SUCCESS;
 }
 
 EsfStatus UART::_rxCallback(uint16_t size)
 {
-    // 切换接收缓冲区
-    m_receiveData.swap();
-    // 启动新的 DMA 接收
-    HAL_UART_Receive_DMA(m_handle, m_receiveData.write().data, 128);
-    // 将接收到的数据写入接收队列
-    Message message = m_receiveData.read();
-    message.size = size;
-    m_receiveErrCode = this->write_queue.pushFromISR(message);
     // 调用自定义接收回调函数
-    auto errcode = this->m_rxCallbackFunc(message);
+    this->m_receiveErrCode = this->m_rxCallbackFunc(this->m_receiveData);
+    // 启动新的 DMA 接收
+    Message message;
+    this->m_receiveErrCode = this->write_queue.popFromISR(message);
+    if (this->m_sendErrCode != ESF_SUCCESS) {
+        return this->m_sendErrCode;
+    }
+    // 接收消息
+    if (HAL_UART_Receive_DMA(m_handle, message.data, message.size) != HAL_OK) {
+        return (this->m_receiveErrCode = ESF_CONNECTIVITY_RECEIVE_ERROR);
+    }
+    // 记录到缓冲区，用于中断
+    this->m_receiveData = message;
 
-    return errcode;
+    return this->m_receiveErrCode;
 }
 } // namespace base
 } // namespace esf

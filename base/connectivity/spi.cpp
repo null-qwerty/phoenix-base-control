@@ -1,4 +1,5 @@
 #include "spi.hpp"
+#include "status.hpp"
 
 #ifdef HAL_SPI_MODULE_ENABLED
 
@@ -36,10 +37,6 @@ SPI::SPI(SPI_HandleTypeDef &handle)
     : m_handle(&handle)
 {
     spi_map[handle.Instance] = this; // 将 SPI 实例添加到映射中
-    // 初始化接收缓冲区
-    m_receiveData.read().data = new uint8_t[128];
-    m_receiveData.swap();
-    m_receiveData.read().data = new uint8_t[128];
 }
 
 SPI &SPI::init()
@@ -71,9 +68,9 @@ EsfStatus SPI::_sendMessageImpl()
 {
     // 从发送队列中获取消息进行发送
     Message message;
-    m_sendErrCode = this->read_queue.pop(message);
-    if (m_sendErrCode != ESF_SUCCESS) {
-        return m_sendErrCode;
+    this->m_sendErrCode = this->read_queue.pop(message);
+    if (this->m_sendErrCode != ESF_SUCCESS) {
+        return this->m_sendErrCode;
     }
     // 发送消息
     if (HAL_SPI_Transmit_DMA(m_handle, message.data, message.size) != HAL_OK) {
@@ -84,39 +81,51 @@ EsfStatus SPI::_sendMessageImpl()
 
 EsfStatus SPI::_receiveMessageImpl()
 {
-    // 阻塞式接收
-    auto errcode = HAL_SPI_Receive(m_handle, m_receiveData.write().data, m_receiveData.write().size, HAL_MAX_DELAY);
-    if (errcode == HAL_OK) {
-        m_receiveErrCode = ESF_SUCCESS;
-        m_receiveData.swap();
-    } else {
-        m_receiveErrCode = ESF_CONNECTIVITY_RECEIVE_ERROR;
+    // 从接收队列中获取接收消息的信息
+    Message message;
+    this->m_receiveErrCode = this->write_queue.pop(message);
+    if (this->m_receiveErrCode != ESF_SUCCESS) {
+        return this->m_receiveErrCode;
     }
-    return m_receiveErrCode;
+    auto errcode = HAL_SPI_Receive_DMA(m_handle, message.data, message.size);
+    if (errcode == HAL_OK) {
+        this->m_receiveErrCode = ESF_SUCCESS;
+    } else {
+        this->m_receiveErrCode = ESF_CONNECTIVITY_RECEIVE_ERROR;
+    }
+    // 存入缓存区，用于中断
+    this->m_receiveData = message;
+
+    return this->m_receiveErrCode;
 }
 
 EsfStatus SPI::_rxCallback(uint16_t size)
 {
-    // 切换接收缓冲区
-    m_receiveData.swap();
-    // 启动新的 DMA 接收
-    HAL_SPI_Receive_DMA(m_handle, m_receiveData.write().data, m_receiveData.write().size);
-    // 将接收到的数据写入接收队列
-    Message message = m_receiveData.read();
-    m_receiveErrCode = this->write_queue.pushFromISR(message);
-    if (m_receiveErrCode != ESF_SUCCESS) {
-        return m_receiveErrCode;
-    }
     // 调用自定义接收回调函数
-    return this->m_rxCallbackFunc(message);
+    this->m_receiveErrCode = this->m_rxCallbackFunc(this->m_receiveData);
+
+    // 启动新的 DMA 接收
+    Message message;
+    this->m_receiveErrCode = this->write_queue.popFromISR(message);
+    if (this->m_receiveErrCode != ESF_SUCCESS) {
+        return this->m_receiveErrCode;
+    }
+    auto errcode = HAL_SPI_Receive_DMA(m_handle, message.data, message.size);
+    if (errcode == HAL_OK) {
+        this->m_receiveErrCode = ESF_SUCCESS;
+    } else {
+        this->m_receiveErrCode = ESF_CONNECTIVITY_RECEIVE_ERROR;
+    }
+    // 存入缓存区，用于中断
+    this->m_receiveData = message;
+    return m_receiveErrCode;
 }
 } // namespace base
 } // namespace esf
 
 void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
 {
-    auto spi = esf::base::SPI::spi_map[hspi->Instance];
-    spi->_rxCallback(hspi->RxXferSize);
+    esf::base::SPI::spi_map[hspi->Instance]->_rxCallback(hspi->RxXferSize);
 }
 
 void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)

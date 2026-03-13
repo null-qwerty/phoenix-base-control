@@ -7,8 +7,8 @@
 #include <type_traits>
 
 #include "FreeRTOS/queue.hpp"
-#include "core/status.hpp"
 #include "core/doublebuffer.hpp"
+#include "core/status.hpp"
 
 #include <functional>
 
@@ -29,12 +29,9 @@ namespace base
 template <typename Derived, typename Message = typename Derived::Message>
 class Connectivity : public ReadQueueBase<Message>, public WriteQueueBase<Message> {
 public:
-    // enum class MessageType : uint8_t { DATA_STREAM = 0, CAN_STD, CAN_EXT, UART, SPI, I2C, RS485, COUNT };
-
     /**
      * @brief 发送消息接口
      *
-     * @param type 通信类型
      * @return EsfStatus 成功返回 ESF_SUCCESS(0)，其他情况参考 core/status.hpp
      */
     virtual EsfStatus sendMessage() final
@@ -44,7 +41,6 @@ public:
     /**
      * @brief 接收消息接口
      *
-     * @param type 通信类型
      * @return EsfStatus 成功返回 ESF_SUCCESS(0)，其他情况参考 core/status.hpp
      */
     virtual EsfStatus receiveMessage() final
@@ -56,32 +52,29 @@ public:
      * @brief 向发送队列添加消息
      *
      * @param message 需要添加的消息
+     * @param fromISR 是否从中断调用
      * @return EsfStatus 成功返回 ESF_SUCCESS(0)，其他情况参考 core/status.hpp
      */
-    EsfStatus pushToSendQueue(Message message)
+    EsfStatus pushToSendQueue(Message message, bool fromISR = false)
     {
+        if (fromISR) {
+            return this->read_queue.pushFromISR(message);
+        }
         return this->read_queue.push(message);
     }
     /**
      * @brief 从接收队列弹出消息
      *
      * @param message 消息存放的位置
+     * @param fromISR 是否从中断调用
      * @return EsfStatus 成功返回 ESF_SUCCESS(0)，其他情况参考 core/status.hpp
      */
-    EsfStatus popFromReceiveQueue(Message &message)
+    EsfStatus pushToReceiveQueue(Message message, bool fromISR = false)
     {
-        return this->write_queue.pop(message);
-    }
-    /**
-     * @brief 设置接收数据大小
-     *
-     * @param size 接收数据大小，单位为字节
-     * @return Connectivity<Derived> 返回当前实例的引用，便于链式调用
-     */
-    Connectivity<Derived, Message> &setReceiveDataSize(size_t size)
-    {
-        m_receiveData.write().size = size;
-        return *this;
+        if (fromISR) {
+            return this->write_queue.pushFromISR(message);
+        }
+        return this->write_queue.push(message);
     }
     /**
      * @brief 设置接收回调函数
@@ -99,12 +92,13 @@ protected:
     Connectivity() = default;
     virtual ~Connectivity() = default;
 
-    DoubleBuffer<Message> m_receiveData; // 接收数据缓冲区
+    Message m_receiveData; // 接收到的数据
 
-    EsfStatus m_sendErrCode; // 发送错误码
+    EsfStatus m_sendErrCode;    // 发送错误码
     EsfStatus m_receiveErrCode; // 接收错误码
 
-    std::function<EsfStatus(Message &)> m_rxCallbackFunc; // 接收回调函数，用于根据接收的消息通知其他模块进行处理
+    std::function<EsfStatus(Message &)>
+        m_rxCallbackFunc; // 接收回调函数，用于根据接收的消息通知其他模块进行处理
 };
 
 /**
@@ -112,8 +106,7 @@ protected:
  *
  * @tparam ConnectivityType 具体的通信接口类型，如 UART、SPI 等
  */
-template <typename ConnectivityType>
-class WithConnectivity {
+template <typename ConnectivityType> class WithConnectivity {
 public:
     WithConnectivity(ConnectivityType &connectivity)
         : m_connectivity(connectivity) {};

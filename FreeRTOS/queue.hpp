@@ -12,8 +12,7 @@ namespace esf
  *
  * @tparam T 队列元素类型
  */
-template <typename T>
-class Queue {
+template <typename T> class Queue {
 public:
     /**
      * @brief 构造函数
@@ -57,7 +56,8 @@ public:
     EsfStatus pop(T &item, TickType_t ticksToWait = 0)
     {
         auto err = xQueueReceive(m_queueHandle, &item, ticksToWait);
-        return err == pdPASS ? ESF_SUCCESS : (err == errQUEUE_EMPTY ? ESF_QUEUE_EMPTY : ESF_TIMEOUT);
+        return err == pdPASS ? ESF_SUCCESS
+                             : (err == errQUEUE_EMPTY ? ESF_QUEUE_EMPTY : ESF_TIMEOUT);
     }
 
     /**
@@ -72,10 +72,10 @@ public:
         if (pxHigherPriorityTaskWoken == nullptr) {
             BaseType_t xHigherPriorityTaskWoken = pdFALSE;
             auto err = xQueueSendFromISR(m_queueHandle, &item, &xHigherPriorityTaskWoken);
-            return err == pdPASS ? ESF_SUCCESS : ESF_TIMEOUT;
+            return err == pdPASS ? ESF_SUCCESS : ESF_QUEUE_PUSH_ERROR;
         }
         auto err = xQueueSendFromISR(m_queueHandle, &item, pxHigherPriorityTaskWoken);
-        return err == pdPASS ? ESF_SUCCESS : ESF_TIMEOUT;
+        return err == pdPASS ? ESF_SUCCESS : ESF_QUEUE_PUSH_ERROR;
     }
     /**
      * @brief 从队列头弹出元素到中断
@@ -89,10 +89,10 @@ public:
         if (pxHigherPriorityTaskWoken == nullptr) {
             BaseType_t xHigherPriorityTaskWoken = pdFALSE;
             auto err = xQueueReceiveFromISR(m_queueHandle, &item, &xHigherPriorityTaskWoken);
-            return err == pdPASS ? ESF_SUCCESS : ESF_TIMEOUT;
+            return err == pdPASS ? ESF_SUCCESS : ESF_QUEUE_POP_ERROR;
         }
         auto err = xQueueReceiveFromISR(m_queueHandle, &item, pxHigherPriorityTaskWoken);
-        return err == pdPASS ? ESF_SUCCESS : ESF_TIMEOUT;
+        return err == pdPASS ? ESF_SUCCESS : ESF_QUEUE_POP_ERROR;
     }
 
 private:
@@ -107,8 +107,7 @@ private:
  *
  * @note 作为 feature 基类
  */
-template <typename elementT, int QueueLength = 5>
-struct ReadQueueBase {
+template <typename elementT, int QueueLength = 5> struct ReadQueueBase {
     ReadQueueBase(size_t length = QueueLength)
         : read_queue(length)
     {
@@ -124,8 +123,7 @@ struct ReadQueueBase {
  *
  * @note 作为 feature 基类
  */
-template <typename elementT, int QueueLength = 5>
-struct WriteQueueBase {
+template <typename elementT, int QueueLength = 5> struct WriteQueueBase {
     WriteQueueBase(size_t length = QueueLength)
         : write_queue(length)
     {

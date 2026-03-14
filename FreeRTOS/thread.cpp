@@ -1,8 +1,14 @@
 #include "thread.hpp"
+#include "projdefs.h"
+#include "queue.hpp"
 
 namespace esf
 {
-Thread::Thread(void (*func)(void *), const char *name, uint16_t stack_size, void *params, UBaseType_t priority)
+Thread::Thread(void (*func)(void *),
+               const char *name,
+               uint16_t stack_size,
+               void *params,
+               UBaseType_t priority)
 {
     xTaskCreate(func, name, stack_size * sizeof(StackType_t), params, priority, &m_handle);
     // vTaskSuspend(m_handle);
@@ -32,6 +38,12 @@ Thread &Thread::suspend()
     return *this;
 }
 
+void Thread::wait(size_t wait_time)
+{
+    auto ms = wait_time == 0 ? portMAX_DELAY : pdMS_TO_TICKS(wait_time);
+    ulTaskNotifyTake(pdFALSE, ms);
+}
+
 Thread &Thread::sleep(size_t ms)
 {
     osDelay(ms);
@@ -54,6 +66,17 @@ void Thread::suspend(Thread &thread)
     if (eTaskGetState(thread.m_handle) != eSuspended) {
         vTaskSuspend(thread.m_handle);
     }
+}
+
+void Thread::notify(Thread &thread, bool fromISR)
+{
+    if (fromISR) {
+        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+        vTaskNotifyGiveFromISR(thread.m_handle, &xHigherPriorityTaskWoken);
+        portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+        return;
+    }
+    xTaskNotifyGive(thread.m_handle);
 }
 
 Thread Thread::this_thread()

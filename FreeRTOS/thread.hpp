@@ -22,7 +22,10 @@ public:
      *
      * @note 线程创建后处于挂起状态，需调用 join() 启动线程
      */
-    Thread(void (*func)(void *), const char *name, uint16_t stack_size = 128, void *params = NULL,
+    Thread(void (*func)(void *),
+           const char *name,
+           uint16_t stack_size = 128,
+           void *params = NULL,
            UBaseType_t priority = osPriorityNormal);
     /**
      * @brief 从 task 句柄创建线程
@@ -72,6 +75,22 @@ public:
      * @param thread 需要挂起的线程
      */
     static void suspend(Thread &thread);
+
+    /**
+     * @brief 通知一个线程
+     *
+     * @param thread 被通知的线程
+     * @param fromISR 是否从中断调用
+     */
+    static void notify(Thread &thread, bool fromISR = false);
+
+    /**
+     * @brief 等待通知
+     *
+     * @param wait_time 最大等待时间，0 为持续等待
+     * @return Thread& 自身引用
+     */
+    static void wait(size_t wait_time = 0);
 
     /**
      * @brief 获取当前线程

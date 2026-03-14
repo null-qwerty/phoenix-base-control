@@ -35,6 +35,7 @@ private:
     EsfStatus _receiveMessageImpl();
 
     EsfStatus _rxCallback(uint16_t size);
+    EsfStatus _txCallback(uint16_t size);
 };
 
 } // namespace base

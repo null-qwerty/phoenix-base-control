@@ -1,6 +1,5 @@
 #include "bmi088.hpp"
 #include "sensor/bmi088_reg.hpp"
-#include "stm32h7xx_hal.h"
 #include "thread.hpp"
 
 namespace esf
@@ -71,8 +70,7 @@ template <typename ConnectivityType> BMI088<ConnectivityType> &BMI088<Connectivi
     // 设置加速度计量程为 ±3g，带宽为正常模式，输出数据速率为 1600Hz
     _writeDataToAcc(BMI088_ACC_RANGE_REG, BMI088_ACC_RANGE_3G);
     HAL_Delay(10);
-    _writeDataToAcc(BMI008_ACC_CONF_REG,
-                    (1 << 7) | (BMI088_ACC_CONF_BWP_NORM << 4) | (BMI088_ACC_CONF_ODR_1600_Hz));
+    _writeDataToAcc(BMI008_ACC_CONF_REG, (1 << 7) | (BMI088_ACC_CONF_BWP_NORM << 4) | (BMI088_ACC_CONF_ODR_1600_Hz));
     // 设置加速度计为激活状态
     _writeDataToAcc(BMI088_ACC_PWR_CTRL_REG, BMI088_ACC_PWR_CTRL_ON);
     HAL_Delay(10);
@@ -202,8 +200,7 @@ template <typename ConnectivityType> EsfStatus BMI088<ConnectivityType>::_readTe
     return m_temprature_status;
 }
 
-template <typename ConnectivityType>
-BMI088<ConnectivityType> &BMI088<ConnectivityType>::_calibrateGyro()
+template <typename ConnectivityType> BMI088<ConnectivityType> &BMI088<ConnectivityType>::_calibrateGyro()
 {
     if (m_gyro_status != ESF_SUCCESS || m_temprature_status != ESF_SUCCESS) {
         return *this;
@@ -214,16 +211,14 @@ BMI088<ConnectivityType> &BMI088<ConnectivityType>::_calibrateGyro()
     return *this;
 }
 
-template <typename ConnectivityType>
-EsfStatus BMI088<ConnectivityType>::_writeDataToAcc(uint8_t reg, uint8_t data)
+template <typename ConnectivityType> EsfStatus BMI088<ConnectivityType>::_writeDataToAcc(uint8_t reg, uint8_t data)
 {
     ENABLE_ACC();
     auto errcode = _writeByte(reg, data);
     DISABLE_ACC();
     return errcode;
 }
-template <typename ConnectivityType>
-EsfStatus BMI088<ConnectivityType>::_writeDataToGyro(uint8_t reg, uint8_t data)
+template <typename ConnectivityType> EsfStatus BMI088<ConnectivityType>::_writeDataToGyro(uint8_t reg, uint8_t data)
 {
     ENABLE_GYRO();
     auto errcode = _writeByte(reg, data);
@@ -263,8 +258,9 @@ template <> EsfStatus BMI088<SPI>::_readByte(uint8_t reg, uint8_t *buf, size_t l
     static uint8_t s_bmi088_read_send_reg = (reg | BMI088_READ);
     EsfStatus errcode = ESF_SUCCESS;
     errcode = this->m_connectivity.pushToSendQueue({ &s_bmi088_read_send_reg, 1 });
-    errcode = this->m_connectivity.sendMessage();
     errcode = this->m_connectivity.pushToReceiveQueue({ .data = buf, .size = len });
+    errcode = this->m_connectivity.sendMessage();
+    esf::Thread::wait();
     errcode = this->m_connectivity.receiveMessage();
     esf::Thread::wait();
     if (errcode != ESF_SUCCESS) {
@@ -283,6 +279,7 @@ template <> EsfStatus BMI088<SPI>::_writeByte(uint8_t reg, uint8_t data)
     EsfStatus errcode = ESF_SUCCESS;
     errcode = this->m_connectivity.pushToSendQueue({ s_bmi088_send_buf, 2 });
     errcode = this->m_connectivity.sendMessage();
+    esf::Thread::wait();
     if (errcode != ESF_SUCCESS) {
         return errcode;
     }

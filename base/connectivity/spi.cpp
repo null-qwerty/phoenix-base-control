@@ -107,19 +107,31 @@ EsfStatus SPI::_rxCallback(uint16_t size)
     }
     return m_receiveErrCode;
 }
+
+EsfStatus SPI::_txCallback(uint16_t size)
+{
+    // 调用自定义接收回调函数
+    if (size >= this->m_sendData.size && this->m_txCallbackFunc) {
+        this->m_sendErrCode = this->m_txCallbackFunc(this->m_sendData);
+    }
+    return m_sendErrCode;
+}
+
 } // namespace base
 } // namespace esf
 
 void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
 {
-    HAL_SPI_DMAStop(hspi);
+    // HAL_SPI_DMAStop(hspi);
     esf::base::SPI::spi_map[hspi->Instance]->_rxCallback(hspi->RxXferSize);
-    HAL_SPI_DMAResume(hspi);
+    // HAL_SPI_DMAResume(hspi);
 }
 
 void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
 {
-    HAL_SPI_DMAResume(hspi);
+    // HAL_SPI_DMAStop(hspi);
+    esf::base::SPI::spi_map[hspi->Instance]->_txCallback(hspi->TxXferSize);
+    // HAL_SPI_DMAResume(hspi);
 }
 
 #endif /* HAL_SPI_MODULE_ENABLED */

@@ -87,18 +87,30 @@ public:
         m_rxCallbackFunc = callback;
         return ESF_SUCCESS;
     }
+    /**
+     * @brief 设置发送回调函数
+     *
+     * @param callback 发送回调函数，参数为 BaseType_t*，用于指示是否需要切换到更高优先级的任务
+     * @return EsfStatus 成功返回 ESF_SUCCESS(0)，其他情况参考 core/status.hpp
+     */
+    EsfStatus setTxCallback(std::function<EsfStatus(Message &)> callback)
+    {
+        m_txCallbackFunc = callback;
+        return ESF_SUCCESS;
+    }
 
 protected:
     Connectivity() = default;
     virtual ~Connectivity() = default;
 
     Message m_receiveData; // 接收到的数据
+    Message m_sendData;
 
     EsfStatus m_sendErrCode;    // 发送错误码
     EsfStatus m_receiveErrCode; // 接收错误码
 
-    std::function<EsfStatus(Message &)>
-        m_rxCallbackFunc; // 接收回调函数，用于根据接收的消息通知其他模块进行处理
+    std::function<EsfStatus(Message &)> m_rxCallbackFunc; // 接收回调函数，用于根据接收的消息通知其他模块进行处理
+    std::function<EsfStatus(Message &)> m_txCallbackFunc;
 };
 
 /**

@@ -102,22 +102,9 @@ EsfStatus SPI::_receiveMessageImpl()
 EsfStatus SPI::_rxCallback(uint16_t size)
 {
     // 调用自定义接收回调函数
-    this->m_receiveErrCode = this->m_rxCallbackFunc(this->m_receiveData);
-
-    // 启动新的 DMA 接收
-    Message message;
-    this->m_receiveErrCode = this->write_queue.popFromISR(message);
-    if (this->m_receiveErrCode != ESF_SUCCESS) {
-        return this->m_receiveErrCode;
+    if (size >= this->m_receiveData.size && this->m_rxCallbackFunc) {
+        this->m_receiveErrCode = this->m_rxCallbackFunc(this->m_receiveData);
     }
-    auto errcode = HAL_SPI_Receive_DMA(m_handle, message.data, message.size);
-    if (errcode == HAL_OK) {
-        this->m_receiveErrCode = ESF_SUCCESS;
-    } else {
-        this->m_receiveErrCode = ESF_CONNECTIVITY_RECEIVE_ERROR;
-    }
-    // 存入缓存区，用于中断
-    this->m_receiveData = message;
     return m_receiveErrCode;
 }
 } // namespace base
@@ -125,12 +112,14 @@ EsfStatus SPI::_rxCallback(uint16_t size)
 
 void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
 {
+    HAL_SPI_DMAStop(hspi);
     esf::base::SPI::spi_map[hspi->Instance]->_rxCallback(hspi->RxXferSize);
+    HAL_SPI_DMAResume(hspi);
 }
 
 void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
 {
-    ;
+    HAL_SPI_DMAResume(hspi);
 }
 
 #endif /* HAL_SPI_MODULE_ENABLED */

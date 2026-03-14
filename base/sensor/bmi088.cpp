@@ -1,5 +1,7 @@
 #include "bmi088.hpp"
 #include "sensor/bmi088_reg.hpp"
+#include "stm32h7xx_hal.h"
+#include "thread.hpp"
 
 namespace esf
 {
@@ -13,6 +15,7 @@ BMI088<ConnectivityType>::BMI088(ConnectivityType &connectivity)
 
 template <typename ConnectivityType> BMI088<ConnectivityType> &BMI088<ConnectivityType>::init()
 {
+    HAL_Delay(50);
     return _initAcc()._initGyro();
 }
 
@@ -64,15 +67,15 @@ template <typename ConnectivityType> BMI088<ConnectivityType> &BMI088<Connectivi
     _readDataFromAcc(BMI088_CHIP_ID_REG, &m_accChipId);
     // 加速度计默认为休眠状态，需要设置为激活状态
     _writeDataToAcc(BMI088_ACC_PWR_CFG_REG, BMI088_ACC_PWR_CFG_ACTIVE);
-    HAL_Delay(1);
+    HAL_Delay(10);
     // 设置加速度计量程为 ±3g，带宽为正常模式，输出数据速率为 1600Hz
     _writeDataToAcc(BMI088_ACC_RANGE_REG, BMI088_ACC_RANGE_3G);
-    HAL_Delay(1);
+    HAL_Delay(10);
     _writeDataToAcc(BMI008_ACC_CONF_REG,
                     (1 << 7) | (BMI088_ACC_CONF_BWP_NORM << 4) | (BMI088_ACC_CONF_ODR_1600_Hz));
     // 设置加速度计为激活状态
     _writeDataToAcc(BMI088_ACC_PWR_CTRL_REG, BMI088_ACC_PWR_CTRL_ON);
-    HAL_Delay(1);
+    HAL_Delay(10);
     // 读取加速度计芯片 ID，正常情况下应该为 0x1E
     _readDataFromAcc(BMI088_CHIP_ID_REG, &m_accChipId);
     _readDataFromAcc(BMI088_CHIP_ID_REG, &m_accChipId);
@@ -85,10 +88,10 @@ template <typename ConnectivityType> BMI088<ConnectivityType> &BMI088<Connectivi
     _readDataFromGyro(BMI088_CHIP_ID_REG, &m_gyroChipId);
     // 设置陀螺仪量程为 ±2000°/s
     _writeDataToGyro(BMI088_GYRO_RANGE_REG, BMI088_GYRO_RANGE_2000_DEG_S);
-    HAL_Delay(1);
+    HAL_Delay(10);
     // 设置陀螺仪输出数据速率为 1000Hz，滤波器带宽为 116Hz
     _writeDataToGyro(BMI088_GYRO_BANDWIDTH_REG, BMI088_GYRO_ODR_1000Hz_BANDWIDTH_116Hz);
-    HAL_Delay(1);
+    HAL_Delay(10);
     // 读取陀螺仪芯片 ID，正常情况下应该为 0x0F
     _readDataFromGyro(BMI088_CHIP_ID_REG, &m_gyroChipId);
     _readDataFromGyro(BMI088_CHIP_ID_REG, &m_gyroChipId);
@@ -257,19 +260,17 @@ namespace base
 {
 template <> EsfStatus BMI088<SPI>::_readByte(uint8_t reg, uint8_t *buf, size_t len)
 {
-    reg |= BMI088_READ;
+    static uint8_t s_bmi088_read_send_reg = (reg | BMI088_READ);
     EsfStatus errcode = ESF_SUCCESS;
-    // 由于接收函数是阻塞的，reg 变量不会被回收，直接使用其地址
-    errcode = this->m_connectivity.pushToSendQueue({ &reg, 1 });
+    errcode = this->m_connectivity.pushToSendQueue({ &s_bmi088_read_send_reg, 1 });
     errcode = this->m_connectivity.sendMessage();
-    if (errcode != ESF_SUCCESS) {
-        return errcode;
-    }
     errcode = this->m_connectivity.pushToReceiveQueue({ .data = buf, .size = len });
     errcode = this->m_connectivity.receiveMessage();
+    esf::Thread::wait();
     if (errcode != ESF_SUCCESS) {
         return errcode;
     }
+
     return errcode;
 }
 

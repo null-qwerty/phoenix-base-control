@@ -32,10 +32,10 @@ struct Bmi088Data {
  *
  * @tparam ConnectivityType 通信方式，已实现 SPI
  *
- * @note 需要在 CubeMX 中提前定义片选针脚 `CS1_Accel_GPIO_Port`,`CS1_Accel_Pin`,`CS1_Gyro_GPIO_Port`,`CS1_Gyro_Pin`
+ * @note 需要在 CubeMX 中提前定义片选针脚
+ * `CS1_ACCEL_GPIO_Port`,`CS1_ACCEL_Pin`,`CS1_GYRO_GPIO_Port`,`CS1_GYRO_Pin`
  */
-template <typename ConnectivityType>
-class BMI088 : public WithConnectivity<ConnectivityType> {
+template <typename ConnectivityType> class BMI088 : public WithConnectivity<ConnectivityType> {
 public:
     using ConnectivityMessageType = typename ConnectivityType::Message; // 消息类型定义
 
@@ -62,7 +62,8 @@ public:
      * @param b_roll poll 误差根据温度变化函数的截距
      * @return BMI088& 返回自身引用，便于链式调用
      *
-     * @note 一种可行的标定方式：记录在不同温度下陀螺仪一段时间中的三轴角速度平均值，进行一次多项式拟合获取参数。
+     * @note
+     一种可行的标定方式：记录在不同温度下陀螺仪一段时间中的三轴角速度平均值，进行一次多项式拟合获取参数。
              建议在实际工作温度前后取值。
 
      */
@@ -83,10 +84,11 @@ public:
 private:
     Bmi088Data m_data; // 传感器数据
 
-    uint8_t *m_accBuf, *m_gyroBuf, *m_tempBuf; // 通信消息缓冲区指针
-    uint8_t m_accChipId, m_gyroChipId; // 片选 id
+    uint8_t m_accBuf[7], m_gyroBuf[6], m_tempBuf[3]; // 通信消息缓冲区指针
+    uint8_t m_accChipId, m_gyroChipId;               // 片选 id
 
-    EsfStatus m_acc_status, m_gyro_status, m_temprature_status; // 加速度计，角速度计和温度获取状态码
+    EsfStatus m_acc_status, m_gyro_status,
+        m_temprature_status; // 加速度计，角速度计和温度获取状态码
 
     struct {
         float k_yaw = 0;
@@ -97,19 +99,19 @@ private:
         float b_roll = 0;
     } m_gyroCalib; // 角速度计矫正参数
 
-    BMI088 &_initAcc(); // 初始化加速度计
+    BMI088 &_initAcc();  // 初始化加速度计
     BMI088 &_initGyro(); // 初始化角速度计
 
-    EsfStatus _readAcc(); // 获取加速度计数据并解析
-    EsfStatus _readGyro(); // 获取角速度计数据并解析
+    EsfStatus _readAcc();        // 获取加速度计数据并解析
+    EsfStatus _readGyro();       // 获取角速度计数据并解析
     EsfStatus _readTemprature(); // 获取温度数据并解析
 
     EsfStatus _readByte(uint8_t reg, uint8_t *buf, size_t len); // 读取寄存器值
-    EsfStatus _writeByte(uint8_t reg, uint8_t data); // 向寄存器写值
+    EsfStatus _writeByte(uint8_t reg, uint8_t data);            // 向寄存器写值
 
-    EsfStatus _writeDataToAcc(uint8_t reg, uint8_t data); // 向加速度计相关的寄存器写值
-    EsfStatus _writeDataToGyro(uint8_t reg, uint8_t data); // 向角速度计相关的数据写值
-    EsfStatus _readDataFromAcc(uint8_t reg, uint8_t *buf, size_t len = 1); // 从加速度计相关的寄存器读值
+    EsfStatus _writeDataToAcc(uint8_t reg, uint8_t data);                   // 向加速度计相关的寄存器写值
+    EsfStatus _writeDataToGyro(uint8_t reg, uint8_t data);                  // 向角速度计相关的数据写值
+    EsfStatus _readDataFromAcc(uint8_t reg, uint8_t *buf, size_t len = 1);  // 从加速度计相关的寄存器读值
     EsfStatus _readDataFromGyro(uint8_t reg, uint8_t *buf, size_t len = 1); // 从角速度计相关的寄存器读值
 
     BMI088 &_calibrateGyro(); // 矫正角速度计数值

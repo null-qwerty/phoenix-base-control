@@ -1,7 +1,8 @@
 #include "uart.hpp"
 #include "status.hpp"
-#include "stm32h7xx_hal_def.h"
 #include <cstdint>
+
+#include "FreeRTOS/thread.hpp"
 
 #ifdef HAL_UART_MODULE_ENABLED
 
@@ -167,6 +168,8 @@ EsfStatus UART::_sendMessageDmaImpl()
         return (m_sendErrCode = ESF_CONNECTIVITY_SEND_ERROR);
     }
     this->m_sendData = message;
+    esf::Thread::wait();
+
     return m_sendErrCode;
 }
 
@@ -184,6 +187,7 @@ EsfStatus UART::_receiveMessageDmaImpl()
     }
     // 记录到缓冲区，用于中断
     this->m_receiveData = message;
+    esf::Thread::wait();
 
     return ESF_SUCCESS;
 }

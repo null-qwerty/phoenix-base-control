@@ -1,7 +1,7 @@
 #include "spi.hpp"
 #include "status.hpp"
-#include "stm32h7xx_hal_def.h"
 
+#include "FreeRTOS/thread.hpp"
 #ifdef HAL_SPI_MODULE_ENABLED
 
 #ifdef SPI1
@@ -98,17 +98,9 @@ EsfStatus SPI::_receiveMessageDmaImpl()
     }
     // 存入缓存区，用于中断
     this->m_receiveData = message;
+    esf::Thread::wait();
 
     return this->m_receiveErrCode;
-}
-
-EsfStatus SPI::_rxCallback(uint16_t size)
-{
-    // 调用自定义接收回调函数
-    if (size >= this->m_receiveData.size && this->m_rxCallbackFunc) {
-        this->m_receiveErrCode = this->m_rxCallbackFunc(this->m_receiveData);
-    }
-    return m_receiveErrCode;
 }
 
 EsfStatus SPI::_receiveMessageImpl()
@@ -152,7 +144,18 @@ EsfStatus SPI::_sendMessageDmaImpl()
         return (m_sendErrCode = ESF_CONNECTIVITY_SEND_ERROR);
     }
     this->m_sendData = message;
+    esf::Thread::wait();
+
     return m_sendErrCode;
+}
+
+EsfStatus SPI::_rxCallback(uint16_t size)
+{
+    // 调用自定义接收回调函数
+    if (size >= this->m_receiveData.size && this->m_rxCallbackFunc) {
+        this->m_receiveErrCode = this->m_rxCallbackFunc(this->m_receiveData);
+    }
+    return m_receiveErrCode;
 }
 
 EsfStatus SPI::_txCallback(uint16_t size)

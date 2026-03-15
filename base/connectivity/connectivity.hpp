@@ -29,6 +29,7 @@ namespace base
 template <typename Derived, typename Message = typename Derived::Message>
 class Connectivity : public ReadQueueBase<Message>, public WriteQueueBase<Message> {
 public:
+    enum class DMA : uint8_t { DISABLE = 0, TX = 1, RX = 2, TX_RX = 3 };
     /**
      * @brief 发送消息接口
      *
@@ -100,7 +101,8 @@ public:
     }
 
 protected:
-    Connectivity() = default;
+    Connectivity(DMA dma)
+        : m_dma(dma) {};
     virtual ~Connectivity() = default;
 
     Message m_receiveData; // 接收到的数据
@@ -111,6 +113,8 @@ protected:
 
     std::function<EsfStatus(Message &)> m_rxCallbackFunc; // 接收回调函数，用于根据接收的消息通知其他模块进行处理
     std::function<EsfStatus(Message &)> m_txCallbackFunc;
+
+    DMA m_dma;
 };
 
 /**

@@ -20,7 +20,7 @@ class UART : public Connectivity<UART, UartMessage> {
 public:
     using Message = UartMessage; // 消息类型定义
 
-    UART(UART_HandleTypeDef &handle);
+    UART(UART_HandleTypeDef &handle, DMA dma);
     ~UART() = default;
 
     UART &init();
@@ -36,6 +36,8 @@ private:
     // 实现 Connectivity 接口的发送函数
     EsfStatus _sendMessageImpl();
     EsfStatus _receiveMessageImpl();
+    EsfStatus _sendMessageDmaImpl();
+    EsfStatus _receiveMessageDmaImpl();
 
     EsfStatus _rxCallback(uint16_t size);
 };

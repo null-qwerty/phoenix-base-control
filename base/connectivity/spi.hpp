@@ -18,7 +18,7 @@ struct SpiMessage {
 class SPI : public Connectivity<SPI, SpiMessage> {
 public:
     using Message = SpiMessage; // 消息类型定义
-    SPI(SPI_HandleTypeDef &handle);
+    SPI(SPI_HandleTypeDef &handle, DMA dma);
     ~SPI() = default;
     SPI &init();
 
@@ -33,6 +33,8 @@ private:
     // 实现 Connectivity 接口的发送函数
     EsfStatus _sendMessageImpl();
     EsfStatus _receiveMessageImpl();
+    EsfStatus _sendMessageDmaImpl();
+    EsfStatus _receiveMessageDmaImpl();
 
     EsfStatus _rxCallback(uint16_t size);
     EsfStatus _txCallback(uint16_t size);

@@ -1,5 +1,6 @@
 #include "spi.hpp"
 #include "status.hpp"
+#include "stm32h7xx_hal_def.h"
 
 #ifdef HAL_SPI_MODULE_ENABLED
 
@@ -33,8 +34,9 @@ namespace base
 {
 std::map<SPI_TypeDef *, SPI *> SPI::spi_map;
 
-SPI::SPI(SPI_HandleTypeDef &handle)
-    : m_handle(&handle)
+SPI::SPI(SPI_HandleTypeDef &handle, DMA dma)
+    : Connectivity<SPI, SpiMessage>(dma)
+    , m_handle(&handle)
 {
     spi_map[handle.Instance] = this; // 将 SPI 实例添加到映射中
 }
@@ -73,13 +75,14 @@ EsfStatus SPI::_sendMessageImpl()
         return this->m_sendErrCode;
     }
     // 发送消息
-    if (HAL_SPI_Transmit_DMA(m_handle, message.data, message.size) != HAL_OK) {
+    if (HAL_SPI_Transmit(m_handle, message.data, message.size, HAL_MAX_DELAY) != HAL_OK) {
         return (m_sendErrCode = ESF_CONNECTIVITY_SEND_ERROR);
     }
+    this->m_sendData = message;
     return m_sendErrCode;
 }
 
-EsfStatus SPI::_receiveMessageImpl()
+EsfStatus SPI::_receiveMessageDmaImpl()
 {
     // 从接收队列中获取接收消息的信息
     Message message;
@@ -106,6 +109,50 @@ EsfStatus SPI::_rxCallback(uint16_t size)
         this->m_receiveErrCode = this->m_rxCallbackFunc(this->m_receiveData);
     }
     return m_receiveErrCode;
+}
+
+EsfStatus SPI::_receiveMessageImpl()
+{
+    // 使用 DMA
+    if (static_cast<uint8_t>(m_dma) & static_cast<uint8_t>(DMA::RX)) {
+        return _receiveMessageDmaImpl();
+    }
+    // 从接收队列中获取接收消息的信息
+    Message message;
+    this->m_receiveErrCode = this->write_queue.pop(message);
+    if (this->m_receiveErrCode != ESF_SUCCESS) {
+        return this->m_receiveErrCode;
+    }
+    auto errcode = HAL_SPI_Receive(m_handle, message.data, message.size, HAL_MAX_DELAY);
+    if (errcode == HAL_OK) {
+        this->m_receiveErrCode = ESF_SUCCESS;
+    } else {
+        this->m_receiveErrCode = ESF_CONNECTIVITY_RECEIVE_ERROR;
+    }
+    // 存入缓存区，用于中断
+    this->m_receiveData = message;
+
+    return this->m_receiveErrCode;
+}
+
+EsfStatus SPI::_sendMessageDmaImpl()
+{
+    // 使用 DMA
+    if (static_cast<uint8_t>(m_dma) & static_cast<uint8_t>(DMA::TX)) {
+        return _sendMessageDmaImpl();
+    }
+    // 从发送队列中获取消息进行发送
+    Message message;
+    this->m_sendErrCode = this->read_queue.pop(message);
+    if (this->m_sendErrCode != ESF_SUCCESS) {
+        return this->m_sendErrCode;
+    }
+    // 发送消息
+    if (HAL_SPI_Transmit_DMA(m_handle, message.data, message.size) != HAL_OK) {
+        return (m_sendErrCode = ESF_CONNECTIVITY_SEND_ERROR);
+    }
+    this->m_sendData = message;
+    return m_sendErrCode;
 }
 
 EsfStatus SPI::_txCallback(uint16_t size)

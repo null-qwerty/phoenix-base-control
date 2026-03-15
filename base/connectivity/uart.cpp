@@ -1,5 +1,7 @@
 #include "uart.hpp"
 #include "status.hpp"
+#include "stm32h7xx_hal_def.h"
+#include <cstdint>
 
 #ifdef HAL_UART_MODULE_ENABLED
 
@@ -77,8 +79,9 @@ namespace base
 {
 std::map<USART_TypeDef *, UART *> UART::uart_map; // 定义全局 UART 实例映射
 
-UART::UART(UART_HandleTypeDef &handle)
-    : m_handle(&handle)
+UART::UART(UART_HandleTypeDef &handle, DMA dma)
+    : Connectivity<UART, UartMessage>(dma)
+    , m_handle(&handle)
 {
     uart_map[handle.Instance] = this; // 将 UART 实例添加到映射中
 }
@@ -151,7 +154,7 @@ UART &UART::init()
     return *this;
 }
 
-EsfStatus UART::_sendMessageImpl()
+EsfStatus UART::_sendMessageDmaImpl()
 {
     // 从发送队列中获取消息进行发送
     Message message;
@@ -163,10 +166,11 @@ EsfStatus UART::_sendMessageImpl()
     if (HAL_UART_Transmit_DMA(m_handle, message.data, message.size) != HAL_OK) {
         return (m_sendErrCode = ESF_CONNECTIVITY_SEND_ERROR);
     }
+    this->m_sendData = message;
     return m_sendErrCode;
 }
 
-EsfStatus UART::_receiveMessageImpl()
+EsfStatus UART::_receiveMessageDmaImpl()
 {
     // 从接收队列中获取接收消息的信息
     Message message;
@@ -176,6 +180,48 @@ EsfStatus UART::_receiveMessageImpl()
     }
     // 接收消息
     if (HAL_UART_Receive_DMA(m_handle, message.data, message.size) != HAL_OK) {
+        return (this->m_receiveErrCode = ESF_CONNECTIVITY_RECEIVE_ERROR);
+    }
+    // 记录到缓冲区，用于中断
+    this->m_receiveData = message;
+
+    return ESF_SUCCESS;
+}
+
+EsfStatus UART::_sendMessageImpl()
+{
+    // 使用 DMA
+    if (static_cast<uint8_t>(m_dma) & static_cast<uint8_t>(DMA::TX)) {
+        return _sendMessageDmaImpl();
+    }
+    // 从发送队列中获取消息进行发送
+    Message message;
+    this->m_sendErrCode = this->read_queue.pop(message);
+    if (this->m_sendErrCode != ESF_SUCCESS) {
+        return this->m_sendErrCode;
+    }
+    // 发送消息
+    if (HAL_UART_Transmit(m_handle, message.data, message.size, HAL_MAX_DELAY) != HAL_OK) {
+        return (m_sendErrCode = ESF_CONNECTIVITY_SEND_ERROR);
+    }
+    this->m_sendData = message;
+    return m_sendErrCode;
+}
+
+EsfStatus UART::_receiveMessageImpl()
+{
+    // 使用 DMA
+    if (static_cast<uint8_t>(m_dma) & static_cast<uint8_t>(DMA::RX)) {
+        return _receiveMessageDmaImpl();
+    }
+    // 从接收队列中获取接收消息的信息
+    Message message;
+    this->m_receiveErrCode = this->write_queue.pop(message);
+    if (this->m_sendErrCode != ESF_SUCCESS) {
+        return this->m_sendErrCode;
+    }
+    // 接收消息
+    if (HAL_UART_Receive(m_handle, message.data, message.size, HAL_MAX_DELAY) != HAL_OK) {
         return (this->m_receiveErrCode = ESF_CONNECTIVITY_RECEIVE_ERROR);
     }
     // 记录到缓冲区，用于中断

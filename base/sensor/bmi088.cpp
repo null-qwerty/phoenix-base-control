@@ -255,14 +255,12 @@ namespace base
 {
 template <> EsfStatus BMI088<SPI>::_readByte(uint8_t reg, uint8_t *buf, size_t len)
 {
-    static uint8_t s_bmi088_read_send_reg = (reg | BMI088_READ);
+    uint8_t bmi088_read_send_reg = (reg | BMI088_READ);
     EsfStatus errcode = ESF_SUCCESS;
-    errcode = this->m_connectivity.pushToSendQueue({ &s_bmi088_read_send_reg, 1 });
+    errcode = this->m_connectivity.pushToSendQueue({ &bmi088_read_send_reg, 1 });
     errcode = this->m_connectivity.pushToReceiveQueue({ .data = buf, .size = len });
     errcode = this->m_connectivity.sendMessage();
-    esf::Thread::wait();
     errcode = this->m_connectivity.receiveMessage();
-    esf::Thread::wait();
     if (errcode != ESF_SUCCESS) {
         return errcode;
     }
@@ -273,13 +271,12 @@ template <> EsfStatus BMI088<SPI>::_readByte(uint8_t reg, uint8_t *buf, size_t l
 template <> EsfStatus BMI088<SPI>::_writeByte(uint8_t reg, uint8_t data)
 {
     reg |= BMI088_WRITE;
-    static uint8_t s_bmi088_send_buf[2]; // 防止局部变量被回收导致段错误，此处设置为静态变量
-    s_bmi088_send_buf[0] = reg;
-    s_bmi088_send_buf[1] = data;
+    uint8_t bmi088_send_buf[2]; // 防止局部变量被回收导致段错误，此处设置为静态变量
+    bmi088_send_buf[0] = reg;
+    bmi088_send_buf[1] = data;
     EsfStatus errcode = ESF_SUCCESS;
-    errcode = this->m_connectivity.pushToSendQueue({ s_bmi088_send_buf, 2 });
+    errcode = this->m_connectivity.pushToSendQueue({ bmi088_send_buf, 2 });
     errcode = this->m_connectivity.sendMessage();
-    esf::Thread::wait();
     if (errcode != ESF_SUCCESS) {
         return errcode;
     }

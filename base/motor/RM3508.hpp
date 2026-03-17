@@ -10,17 +10,20 @@ namespace esf
 namespace base
 {
 
-struct RM3508State {
-    float position;
-    float velocity;
-    float current;
-    float temperate;
+struct RM3508State : public BasicMotorState {
+    float rotor_position; // 转子角度
+    float rotor_velocity; // 转子速度
+    float rotor_current;  // 转矩电流
 };
 class RM3508 : public Motor<RM3508, RM3508State, uint16_t> {
 public:
     RM3508(uint16_t id, float reduration_ratio = 3591.0f / 17.0f, Direction direction = Direction::CCW);
     ~RM3508() = default;
     template <typename ConnectivityType> friend class RM3508Helper;
+
+private:
+    float m_current_param; // 电机电流参数，表明每 Nm 输出多大力矩
+    int m_rotor_count = 0; // 转子圈数
 };
 
 template <typename ConnectivityType>

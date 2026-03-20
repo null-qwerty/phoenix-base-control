@@ -15,10 +15,10 @@ namespace base
  *
  */
 struct BasicMotorState {
-    float position;    // 输出位置，单位 rad
-    float velocity;    // 输出速度，单位 rad/s
-    float torque;      // 输出力矩，单位 Nm
-    float temperature; // 温度，单位 °C
+    double position;    // 输出位置，单位 rad
+    double velocity;    // 输出速度，单位 rad/s
+    double torque;      // 输出力矩，单位 Nm
+    double temperature; // 温度，单位 °C
 };
 
 /**

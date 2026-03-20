@@ -65,7 +65,7 @@ template <> EsfStatus RM3508Helper<FDCAN>::_encodeMessageImpl()
     uint8_t index_offset = m_id == RM3508HelperId::MOTOR_1_TO_4 ? 1 : 5;
     for (auto &motor : m_motor_map) {
         uint8_t index = motor.first - index_offset;
-        uint16_t current = motor.second.commend();
+        uint16_t current = static_cast<int8_t>(motor.second.m_direction) * motor.second.commend();
         m_send_frame.data[index] = (current >> 8) & 0xff;
         m_send_frame.data[index + 1] = (current >> 0) & 0xff;
     }

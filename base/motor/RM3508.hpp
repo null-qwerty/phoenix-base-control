@@ -1,9 +1,6 @@
 #pragma once
 
 #include "motor/motor.hpp"
-#include "status.hpp"
-
-#include <map>
 
 namespace esf
 {
@@ -37,8 +34,6 @@ public:
     ~RM3508Helper() = default;
 
 private:
-    std::map<uint16_t, RM3508 *> m_motor_map;
-
     ConnectivityMessageType m_receive_frame, m_send_frame;
 
     RM3508HelperId m_id;
@@ -49,7 +44,7 @@ private:
             (m_id == RM3508HelperId::MOTOR_5_TO_9 && (motor.id() < 5 || motor.id() > 9))) {
             return ESF_MOTOR_HELPER_REGISTER_ERROR;
         }
-        m_motor_map[motor.id()] = &motor;
+        this->m_motor_map[motor.id()] = motor;
         return ESF_SUCCESS;
     }
     EsfStatus _encodeMessageImpl();

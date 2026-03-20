@@ -3,6 +3,8 @@
 #include "connectivity/connectivity.hpp"
 #include "core/status.hpp"
 
+#include <map>
+
 namespace esf
 {
 namespace base
@@ -79,6 +81,9 @@ public:
     {
         return static_cast<Derived *>(this)->_decodeMessageImpl(message);
     }
+
+protected:
+    std::map<uint16_t, MotorType &> m_motor_map;
 };
 
 /**

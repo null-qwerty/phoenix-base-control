@@ -65,7 +65,7 @@ template <> EsfStatus RM3508Helper<FDCAN>::_encodeMessageImpl()
     uint8_t index_offset = m_id == RM3508HelperId::MOTOR_1_TO_4 ? 1 : 5;
     for (auto &motor : m_motor_map) {
         uint8_t index = motor.first - index_offset;
-        uint16_t current = motor.second->commend();
+        uint16_t current = motor.second.commend();
         m_send_frame.data[index] = (current >> 8) & 0xff;
         m_send_frame.data[index + 1] = (current >> 0) & 0xff;
     }
@@ -80,28 +80,28 @@ template <> EsfStatus RM3508Helper<FDCAN>::_decodeMessageImpl(FDCAN::Message &me
     }
     auto &motor = m_motor_map[message.id - 0x200];
     auto data = message.data;
-    auto last_rotor_position = motor->state().rotor_position; // 记录上次转子位置
+    auto last_rotor_position = motor.state().rotor_position; // 记录上次转子位置
     // 记录原始信息，RM3508 原始信息均为转子信息
-    motor->state().rotor_position = 1.0f * static_cast<float>(motor->m_direction) *
+    motor.state().rotor_position = 1.0f * static_cast<float>(motor.m_direction) *
                                     static_cast<float>((static_cast<uint16_t>(data[0]) << 8) | data[1]) * 2.0f * M_PI /
                                     8191.0f;
-    motor->state().rotor_velocity = 1.0f * static_cast<float>(motor->m_direction) *
+    motor.state().rotor_velocity = 1.0f * static_cast<float>(motor.m_direction) *
                                     static_cast<float>((static_cast<int16_t>(data[2]) << 8) | data[3]);
-    motor->state().rotor_current = 1.0f * static_cast<float>(motor->m_direction) *
+    motor.state().rotor_current = 1.0f * static_cast<float>(motor.m_direction) *
                                    static_cast<float>(static_cast<int16_t>(data[4] << 8) | data[5]) / 16384.0f * 10.0f;
-    motor->state().temperature = static_cast<float>(data[6]);
+    motor.state().temperature = static_cast<float>(data[6]);
     // 计算输出轴数据
-    auto rotor_position_diff = motor->state().rotor_position - last_rotor_position;
+    auto rotor_position_diff = motor.state().rotor_position - last_rotor_position;
     // 判断转子位置是否过零点
-    if (rotor_position_diff > 0 && motor->state().velocity < 0) {
-        motor->m_rotor_count--;
-    } else if (rotor_position_diff < 0 && motor->state().velocity > 0) {
-        motor->m_rotor_count++;
+    if (rotor_position_diff > 0 && motor.state().velocity < 0) {
+        motor.m_rotor_count--;
+    } else if (rotor_position_diff < 0 && motor.state().velocity > 0) {
+        motor.m_rotor_count++;
     }
-    motor->state().position = (motor->m_rotor_count * 2.0f * M_PI + motor->state().rotor_position) /
-                              motor->m_reduction_ratio;
-    motor->state().velocity = motor->state().rotor_velocity / motor->m_reduction_ratio;
-    motor->state().torque = motor->state().rotor_current * motor->m_current_param;
+    motor.state().position = (motor.m_rotor_count * 2.0f * M_PI + motor.state().rotor_position) /
+                             motor.m_reduction_ratio;
+    motor.state().velocity = motor.state().rotor_velocity / motor.m_reduction_ratio;
+    motor.state().torque = motor.state().rotor_current * motor.m_current_param;
 
     m_connectivity.pushToReceiveQueue(m_receive_frame);
     return ESF_SUCCESS;

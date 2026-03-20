@@ -175,7 +175,7 @@ public:
     }
 
 protected:
-    uint16_t m_id;           // 电机 ID
+    uint32_t m_id;           // 电机 ID
     float m_reduction_ratio; // 减速比
 
     State m_state, m_zero, m_max, m_min; // 状态、零点和限制

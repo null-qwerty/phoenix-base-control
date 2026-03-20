@@ -14,7 +14,7 @@ struct RM3508State : public BasicMotorState {
 };
 class RM3508 : public Motor<RM3508, RM3508State, uint16_t> {
 public:
-    RM3508(uint16_t id, float reduration_ratio = 3591.0f / 17.0f, Direction direction = Direction::CCW);
+    RM3508(uint32_t id, float reduration_ratio = 3591.0f / 17.0f, Direction direction = Direction::CCW);
     ~RM3508() = default;
     template <typename ConnectivityType> friend class RM3508Helper;
 

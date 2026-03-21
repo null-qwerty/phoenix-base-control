@@ -83,7 +83,7 @@ public:
     }
 
 protected:
-    std::map<uint16_t, MotorType &> m_motor_map;
+    std::map<uint16_t, MotorType *> m_motor_map;
 };
 
 /**

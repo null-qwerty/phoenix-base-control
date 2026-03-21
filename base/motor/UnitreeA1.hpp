@@ -75,13 +75,13 @@ private:
     EsfStatus _registerMotorImpl(UnitreeA1 &motor)
     {
         this->m_motor_map[motor.id()] = motor;
-        _sendOneMotorCommend(motor); // 获取初始状态，方便设置软限位
+        _sendOneMotorCommend(&motor); // 获取初始状态，方便设置软限位
         return ESF_SUCCESS;
     }
     EsfStatus _encodeMessageImpl();
     EsfStatus _decodeMessageImpl(ConnectivityMessageType &message);
 
-    inline EsfStatus _sendOneMotorCommend(UnitreeA1 &motor);
+    inline EsfStatus _sendOneMotorCommend(UnitreeA1 *motor);
 };
 
 } // namespace base

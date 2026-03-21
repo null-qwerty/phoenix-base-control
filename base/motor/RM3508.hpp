@@ -48,7 +48,7 @@ private:
             (m_id == RM3508HelperId::MOTOR_5_TO_9 && (motor.id() < 5 || motor.id() > 9))) {
             return ESF_MOTOR_HELPER_REGISTER_ERROR;
         }
-        this->m_motor_map[motor.id()] = motor;
+        this->m_motor_map[motor.id()] = &motor;
         return ESF_SUCCESS;
     }
     EsfStatus _encodeMessageImpl();

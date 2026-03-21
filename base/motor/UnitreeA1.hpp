@@ -74,7 +74,7 @@ private:
 
     EsfStatus _registerMotorImpl(UnitreeA1 &motor)
     {
-        this->m_motor_map[motor.id()] = motor;
+        this->m_motor_map[motor.id()] = &motor;
         _sendOneMotorCommend(&motor); // 获取初始状态，方便设置软限位
         return ESF_SUCCESS;
     }

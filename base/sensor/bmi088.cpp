@@ -283,7 +283,7 @@ template <> EsfStatus BMI088<SPI>::_writeByte(uint8_t reg, uint8_t data)
     return errcode;
 }
 template class BMI088<SPI>;
-#endif
 
 } // namespace base
 } // namespace esf
+#endif

@@ -5,6 +5,8 @@
 #ifdef HAL_FDCAN_MODULE_ENABLED
 #include <map>
 
+#include "fdcan.h"
+
 namespace esf
 {
 namespace base

@@ -17,13 +17,6 @@ namespace esf
 {
 namespace base
 {
-FDCAN::FDCAN(FDCAN_HandleTypeDef &handle, FDCAN_FilterTypeDef &filter)
-    : Connectivity<FDCAN, FdcanMessage>(DMA::DISABLE)
-    , m_handle(&handle)
-    , m_filter(&filter)
-{
-    fdcan_map[handle.Instance] = this;
-}
 FDCAN &FDCAN::init()
 {
 // 根据 FDCAN 句柄的实例选择对应的初始化函数进行初始化

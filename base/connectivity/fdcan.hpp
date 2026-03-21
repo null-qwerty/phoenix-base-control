@@ -35,7 +35,13 @@ public:
      * @param handle FDCAN 句柄
      * @param filter FDCAN 过滤器配置
      */
-    FDCAN(FDCAN_HandleTypeDef &handle, FDCAN_FilterTypeDef &filter);
+    FDCAN(FDCAN_HandleTypeDef &handle, FDCAN_FilterTypeDef &filter)
+        : Connectivity<FDCAN, FdcanMessage>(DMA::DISABLE)
+        , m_handle(&handle)
+        , m_filter(&filter)
+    {
+        fdcan_map[handle.Instance] = this;
+    }
     /**
      * @brief 析构函数
      *

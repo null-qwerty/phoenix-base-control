@@ -23,6 +23,8 @@ class UnitreeA1 : public Motor<UnitreeA1, UnitreeA1State, UnitreeA1Commend> {
 public:
     UnitreeA1(uint32_t id, float reduration_ratio = 1.0f, Direction direction = Direction::CCW);
     ~UnitreeA1() = default;
+
+    friend Motor;
     template <typename ConnectivityType> friend class UnitreeA1Helper;
 };
 
@@ -63,6 +65,8 @@ public:
         return CRC32;
 #endif
     }
+
+    friend MotorHelper<UnitreeA1Helper<ConnectivityType>, UnitreeA1, ConnectivityType>;
 
 private:
     ConnectivityMessageType m_receive_frame, m_send_frame;

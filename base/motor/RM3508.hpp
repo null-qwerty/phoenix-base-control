@@ -16,6 +16,8 @@ class RM3508 : public Motor<RM3508, RM3508State, uint16_t> {
 public:
     RM3508(uint32_t id, float reduration_ratio = 3591.0f / 17.0f, Direction direction = Direction::CCW);
     ~RM3508() = default;
+
+    friend Motor;
     template <typename ConnectivityType> friend class RM3508Helper;
 
 private:
@@ -32,6 +34,8 @@ public:
 
     RM3508Helper(ConnectivityType &connectivity, RM3508HelperId id);
     ~RM3508Helper() = default;
+
+    friend MotorHelper<RM3508Helper<ConnectivityType>, RM3508, ConnectivityType>;
 
 private:
     ConnectivityMessageType m_receive_frame, m_send_frame;

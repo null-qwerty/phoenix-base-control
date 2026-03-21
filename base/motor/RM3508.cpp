@@ -27,12 +27,6 @@ RM3508::RM3508(uint32_t id, float reduration_ratio, Direction direction)
     m_max.torque = 10.0f * m_current_param;
 }
 
-template <typename ConnectivityType>
-RM3508Helper<ConnectivityType>::RM3508Helper(ConnectivityType &connectivity, RM3508HelperId id)
-    : MotorHelper<RM3508Helper<ConnectivityType>, RM3508, ConnectivityType>(connectivity)
-    , m_id(id)
-{
-}
 } // namespace base
 } // namespace esf
 

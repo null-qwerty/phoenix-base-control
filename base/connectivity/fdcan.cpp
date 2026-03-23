@@ -37,11 +37,12 @@ FDCAN &FDCAN::init()
 #endif
     // 配置过滤器并启动 FDCAN
     HAL_FDCAN_ConfigFilter(m_handle, m_filter);
-    HAL_FDCAN_Start(m_handle);
+    HAL_FDCAN_ConfigGlobalFilter(m_handle, FDCAN_REJECT, FDCAN_REJECT, FDCAN_FILTER_REMOTE, FDCAN_FILTER_REMOTE);
     HAL_FDCAN_ActivateNotification(m_handle,
                                    m_filter->FilterConfig == FDCAN_FILTER_TO_RXFIFO0 ? FDCAN_IT_RX_FIFO0_NEW_MESSAGE
                                                                                      : FDCAN_IT_RX_FIFO1_NEW_MESSAGE,
                                    0);
+    HAL_FDCAN_Start(m_handle);
     return *this;
 }
 
@@ -59,6 +60,9 @@ EsfStatus FDCAN::_sendMessageImpl()
     tx_header.Identifier = message.id;
     tx_header.TxFrameType = FDCAN_DATA_FRAME;
     tx_header.DataLength = (message.size <= 8) ? FDCAN_DLC_BYTES_8 : FDCAN_DLC_BYTES_64;
+    tx_header.FDFormat = FDCAN_CLASSIC_CAN;
+    tx_header.BitRateSwitch = FDCAN_BRS_OFF;
+    tx_header.MessageMarker = 0;
 
     auto halerrcode = HAL_FDCAN_AddMessageToTxFifoQ(m_handle, &tx_header, message.data);
     if (halerrcode != HAL_OK) {
@@ -108,6 +112,9 @@ EsfStatus FDCAN::_receiveMessageDmaImpl()
 
 EsfStatus FDCAN::_rxCallback()
 {
+    if (m_receiveData.data == nullptr) {
+        return ESF_NULLPTR_ERROR;
+    }
     FDCAN_RxHeaderTypeDef rx_header = { 0 };
     auto halerrcode = HAL_FDCAN_GetRxMessage(m_handle,
                                              (m_filter->FilterConfig == FDCAN_FILTER_TO_RXFIFO0) ? FDCAN_RX_FIFO0

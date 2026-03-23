@@ -14,6 +14,11 @@ BMI088<ConnectivityType>::BMI088(ConnectivityType &connectivity)
 
 template <typename ConnectivityType> BMI088<ConnectivityType> &BMI088<ConnectivityType>::init()
 {
+    // 加速度计复位，寄存器重置，重置完后加速度计默认为休眠状态
+    _writeDataToAcc(BMI088_ACC_SOFTRESET_REG, BMI088_ACC_SOFTRESET_VALUE);
+    HAL_Delay(1);
+    // 陀螺仪复位，寄存器重置，重置完后陀螺仪默认为开启状态
+    _writeDataToGyro(BMI088_GYRO_SOFTRESET_REG, BMI088_GYRO_SOFTRESET_VALUE);
     HAL_Delay(50);
     return _initAcc()._initGyro();
 }

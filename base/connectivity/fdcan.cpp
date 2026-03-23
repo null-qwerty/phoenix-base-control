@@ -96,6 +96,16 @@ EsfStatus FDCAN::_receiveMessageImpl()
     return m_receiveErrCode;
 }
 
+EsfStatus FDCAN::_sendMessageDmaImpl()
+{
+    return ESF_CONNECTIVITY_SEND_ERROR;
+}
+
+EsfStatus FDCAN::_receiveMessageDmaImpl()
+{
+    return ESF_CONNECTIVITY_RECEIVE_ERROR;
+}
+
 EsfStatus FDCAN::_rxCallback()
 {
     FDCAN_RxHeaderTypeDef rx_header = { 0 };

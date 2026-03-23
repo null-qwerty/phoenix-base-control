@@ -68,6 +68,8 @@ private:
     // 实现 Connectivity 接口的发送和接收函数
     EsfStatus _sendMessageImpl();
     EsfStatus _receiveMessageImpl();
+    EsfStatus _sendMessageDmaImpl();
+    EsfStatus _receiveMessageDmaImpl();
 
     EsfStatus _rxCallback();
 };

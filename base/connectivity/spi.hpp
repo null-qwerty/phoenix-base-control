@@ -3,6 +3,7 @@
 #include "connectivity.hpp"
 #ifdef HAL_SPI_MODULE_ENABLED
 #include "portmacro.h"
+#include "spi.h"
 
 #include <map>
 

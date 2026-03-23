@@ -37,6 +37,9 @@ public:
      */
     virtual EsfStatus sendMessage() final
     {
+        if (static_cast<uint8_t>(m_dma) & static_cast<uint8_t>(DMA::TX)) {
+            return static_cast<Derived *>(this)->_sendMessageDmaImpl();
+        }
         return static_cast<Derived *>(this)->_sendMessageImpl();
     }
     /**
@@ -46,6 +49,9 @@ public:
      */
     virtual EsfStatus receiveMessage() final
     {
+        if (static_cast<uint8_t>(m_dma) & static_cast<uint8_t>(DMA::RX)) {
+            return static_cast<Derived *>(this)->_receiveMessageDmaImpl();
+        }
         return static_cast<Derived *>(this)->_receiveMessageImpl();
     }
 

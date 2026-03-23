@@ -68,10 +68,6 @@ SPI &SPI::init()
 
 EsfStatus SPI::_sendMessageImpl()
 {
-    // 使用 DMA
-    if (static_cast<uint8_t>(m_dma) & static_cast<uint8_t>(DMA::TX)) {
-        return _sendMessageDmaImpl();
-    }
     // 从发送队列中获取消息进行发送
     Message message;
     this->m_sendErrCode = this->read_queue.pop(message);
@@ -109,10 +105,6 @@ EsfStatus SPI::_receiveMessageDmaImpl()
 
 EsfStatus SPI::_receiveMessageImpl()
 {
-    // 使用 DMA
-    if (static_cast<uint8_t>(m_dma) & static_cast<uint8_t>(DMA::RX)) {
-        return _receiveMessageDmaImpl();
-    }
     // 从接收队列中获取接收消息的信息
     Message message;
     this->m_receiveErrCode = this->write_queue.pop(message);

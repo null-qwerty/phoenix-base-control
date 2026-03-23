@@ -210,9 +210,9 @@ template <typename ConnectivityType> BMI088<ConnectivityType> &BMI088<Connectivi
     if (m_gyro_status != ESF_SUCCESS || m_temprature_status != ESF_SUCCESS) {
         return *this;
     }
-    m_data.gyro.yaw = m_gyroCalib.k_yaw * m_data.temperature + m_gyroCalib.b_yaw;
-    m_data.gyro.pitch = m_gyroCalib.k_pitch * m_data.temperature + m_gyroCalib.b_pitch;
-    m_data.gyro.roll = m_gyroCalib.k_roll * m_data.temperature + m_gyroCalib.b_roll;
+    m_data.gyro.yaw += m_gyroCalib.k_yaw * m_data.temperature + m_gyroCalib.b_yaw;
+    m_data.gyro.pitch += m_gyroCalib.k_pitch * m_data.temperature + m_gyroCalib.b_pitch;
+    m_data.gyro.roll += m_gyroCalib.k_roll * m_data.temperature + m_gyroCalib.b_roll;
     return *this;
 }
 

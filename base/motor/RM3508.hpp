@@ -8,9 +8,9 @@ namespace base
 {
 
 struct RM3508State : public BasicMotorState {
-    float rotor_position; // 转子角度
-    float rotor_velocity; // 转子速度
-    float rotor_current;  // 转矩电流
+    double rotor_position; // 转子角度
+    double rotor_velocity; // 转子速度
+    double rotor_current;  // 转矩电流
 };
 class RM3508 : public Motor<RM3508, RM3508State, uint16_t> {
 public:

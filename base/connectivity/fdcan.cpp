@@ -1,4 +1,5 @@
 #include "fdcan.hpp"
+#include "FreeRTOS/thread.hpp"
 #include "portmacro.h"
 #ifdef HAL_FDCAN_MODULE_ENABLED
 
@@ -46,25 +47,9 @@ FDCAN &FDCAN::init()
     return *this;
 }
 
-EsfStatus FDCAN::_sendMessageImpl()
+EsfStatus FDCAN::_sendMessageImpl(MessageSend &message)
 {
-    FDCAN_TxHeaderTypeDef tx_header = { 0 };
-    // 从发送队列中获取消息进行发送
-    Message message;
-    m_sendErrCode = this->read_queue.pop(message);
-    if (m_sendErrCode != ESF_SUCCESS) {
-        return m_sendErrCode;
-    }
-
-    tx_header.IdType = (message.is_ext == true) ? FDCAN_EXTENDED_ID : FDCAN_STANDARD_ID;
-    tx_header.Identifier = message.id;
-    tx_header.TxFrameType = FDCAN_DATA_FRAME;
-    tx_header.DataLength = (message.size <= 8) ? FDCAN_DLC_BYTES_8 : FDCAN_DLC_BYTES_64;
-    tx_header.FDFormat = FDCAN_CLASSIC_CAN;
-    tx_header.BitRateSwitch = FDCAN_BRS_OFF;
-    tx_header.MessageMarker = 0;
-
-    auto halerrcode = HAL_FDCAN_AddMessageToTxFifoQ(m_handle, &tx_header, message.data);
+    auto halerrcode = HAL_FDCAN_AddMessageToTxFifoQ(m_handle, &message.header, message.data);
     if (halerrcode != HAL_OK) {
         m_sendErrCode = ESF_CONNECTIVITY_SEND_ERROR;
     }
@@ -72,40 +57,28 @@ EsfStatus FDCAN::_sendMessageImpl()
     return m_sendErrCode;
 }
 
-EsfStatus FDCAN::_receiveMessageImpl()
+EsfStatus FDCAN::_receiveMessageImpl(MessageReceive &message)
 {
-    FDCAN_RxHeaderTypeDef rx_header = { 0 };
-
-    // 从接收队列中获取信息进行接受
-    Message message;
-    m_receiveErrCode = this->write_queue.pop(message);
-    if (m_receiveErrCode != ESF_SUCCESS) {
-        return m_receiveErrCode;
-    }
+    this->m_receiveData = message;
     auto halerrcode = HAL_FDCAN_GetRxMessage(m_handle,
                                              (m_filter->FilterConfig == FDCAN_FILTER_TO_RXFIFO0) ? FDCAN_RX_FIFO0
                                                                                                  : FDCAN_RX_FIFO1,
-                                             &rx_header,
+                                             &message.header,
                                              message.data);
     if (halerrcode != HAL_OK) {
         m_receiveErrCode = ESF_CONNECTIVITY_RECEIVE_ERROR;
         return m_receiveErrCode;
     }
-    message.id = rx_header.Identifier;
-    message.size = (rx_header.DataLength > 8) ? 64 : rx_header.DataLength; // FDCAN DLC
-                                                                           // 转换为实际字节
-    message.is_ext = rx_header.IdType == FDCAN_EXTENDED_ID ? true : false;
-    this->m_receiveData = message;
 
     return m_receiveErrCode;
 }
 
-EsfStatus FDCAN::_sendMessageDmaImpl()
+EsfStatus FDCAN::_sendMessageDmaImpl(MessageSend &message)
 {
     return ESF_CONNECTIVITY_SEND_ERROR;
 }
 
-EsfStatus FDCAN::_receiveMessageDmaImpl()
+EsfStatus FDCAN::_receiveMessageDmaImpl(MessageReceive &message)
 {
     return ESF_CONNECTIVITY_RECEIVE_ERROR;
 }
@@ -115,19 +88,6 @@ EsfStatus FDCAN::_rxCallback()
     if (m_receiveData.data == nullptr) {
         return ESF_NULLPTR_ERROR;
     }
-    FDCAN_RxHeaderTypeDef rx_header = { 0 };
-    auto halerrcode = HAL_FDCAN_GetRxMessage(m_handle,
-                                             (m_filter->FilterConfig == FDCAN_FILTER_TO_RXFIFO0) ? FDCAN_RX_FIFO0
-                                                                                                 : FDCAN_RX_FIFO1,
-                                             &rx_header,
-                                             m_receiveData.data);
-    if (halerrcode != HAL_OK) {
-        m_receiveErrCode = ESF_CONNECTIVITY_RECEIVE_ERROR;
-        return m_receiveErrCode;
-    }
-    m_receiveData.id = rx_header.Identifier;
-    m_receiveData.size = (rx_header.DataLength > 8) ? 64 : rx_header.DataLength; // FDCAN DLC
-                                                                                 // 转换为实际字节
     // 调用自定义接收回调函数
     auto errcode = this->m_rxCallbackFunc(m_receiveData);
     return errcode;

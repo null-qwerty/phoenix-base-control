@@ -2,7 +2,6 @@
 
 #include "connectivity.hpp"
 #ifdef HAL_UART_MODULE_ENABLED
-#include "portmacro.h"
 
 #include <map>
 
@@ -16,9 +15,10 @@ struct UartMessage {
     size_t size;
 };
 
-class UART : public Connectivity<UART, UartMessage> {
+class UART : public Connectivity<UART, UartMessage, UartMessage> {
 public:
-    using Message = UartMessage; // 消息类型定义
+    using MessageSend = UartMessage; // 消息类型定义
+    using MessageReceive = UartMessage;
 
     UART(UART_HandleTypeDef &handle, DMA dma);
     ~UART() = default;
@@ -34,10 +34,10 @@ private:
     static std::map<USART_TypeDef *, UART *> uart_map;
 
     // 实现 Connectivity 接口的发送函数
-    EsfStatus _sendMessageImpl();
-    EsfStatus _receiveMessageImpl();
-    EsfStatus _sendMessageDmaImpl();
-    EsfStatus _receiveMessageDmaImpl();
+    EsfStatus _sendMessageImpl(MessageSend &message);
+    EsfStatus _receiveMessageImpl(MessageReceive &message);
+    EsfStatus _sendMessageDmaImpl(MessageSend &message);
+    EsfStatus _receiveMessageDmaImpl(MessageReceive &message);
 
     EsfStatus _rxCallback(uint16_t size);
 };

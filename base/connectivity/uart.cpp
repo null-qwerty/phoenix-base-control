@@ -155,15 +155,8 @@ UART &UART::init()
     return *this;
 }
 
-EsfStatus UART::_sendMessageDmaImpl()
+EsfStatus UART::_sendMessageDmaImpl(MessageSend &message)
 {
-    // 从发送队列中获取消息进行发送
-    Message message;
-    this->m_sendErrCode = this->read_queue.pop(message);
-    if (this->m_sendErrCode != ESF_SUCCESS) {
-        return this->m_sendErrCode;
-    }
-    // 发送消息
     if (HAL_UART_Transmit_DMA(m_handle, message.data, message.size) != HAL_OK) {
         return (m_sendErrCode = ESF_CONNECTIVITY_SEND_ERROR);
     }
@@ -173,15 +166,8 @@ EsfStatus UART::_sendMessageDmaImpl()
     return m_sendErrCode;
 }
 
-EsfStatus UART::_receiveMessageDmaImpl()
+EsfStatus UART::_receiveMessageDmaImpl(MessageReceive &message)
 {
-    // 从接收队列中获取接收消息的信息
-    Message message;
-    this->m_receiveErrCode = this->write_queue.pop(message);
-    if (this->m_sendErrCode != ESF_SUCCESS) {
-        return this->m_sendErrCode;
-    }
-    // 接收消息
     if (HAL_UART_Receive_DMA(m_handle, message.data, message.size) != HAL_OK) {
         return (this->m_receiveErrCode = ESF_CONNECTIVITY_RECEIVE_ERROR);
     }
@@ -192,15 +178,8 @@ EsfStatus UART::_receiveMessageDmaImpl()
     return ESF_SUCCESS;
 }
 
-EsfStatus UART::_sendMessageImpl()
+EsfStatus UART::_sendMessageImpl(MessageSend &message)
 {
-    // 从发送队列中获取消息进行发送
-    Message message;
-    this->m_sendErrCode = this->read_queue.pop(message);
-    if (this->m_sendErrCode != ESF_SUCCESS) {
-        return this->m_sendErrCode;
-    }
-    // 发送消息
     if (HAL_UART_Transmit(m_handle, message.data, message.size, HAL_MAX_DELAY) != HAL_OK) {
         return (m_sendErrCode = ESF_CONNECTIVITY_SEND_ERROR);
     }
@@ -208,15 +187,8 @@ EsfStatus UART::_sendMessageImpl()
     return m_sendErrCode;
 }
 
-EsfStatus UART::_receiveMessageImpl()
+EsfStatus UART::_receiveMessageImpl(MessageReceive &message)
 {
-    // 从接收队列中获取接收消息的信息
-    Message message;
-    this->m_receiveErrCode = this->write_queue.pop(message);
-    if (this->m_sendErrCode != ESF_SUCCESS) {
-        return this->m_sendErrCode;
-    }
-    // 接收消息
     if (HAL_UART_Receive(m_handle, message.data, message.size, HAL_MAX_DELAY) != HAL_OK) {
         return (this->m_receiveErrCode = ESF_CONNECTIVITY_RECEIVE_ERROR);
     }
@@ -231,17 +203,10 @@ EsfStatus UART::_rxCallback(uint16_t size)
     // 调用自定义接收回调函数
     this->m_receiveErrCode = this->m_rxCallbackFunc(this->m_receiveData);
     // 启动新的 DMA 接收
-    Message message;
-    this->m_receiveErrCode = this->write_queue.popFromISR(message);
-    if (this->m_sendErrCode != ESF_SUCCESS) {
-        return this->m_sendErrCode;
-    }
-    // 接收消息
+    auto message = this->m_receiveData;
     if (HAL_UART_Receive_DMA(m_handle, message.data, message.size) != HAL_OK) {
         return (this->m_receiveErrCode = ESF_CONNECTIVITY_RECEIVE_ERROR);
     }
-    // 记录到缓冲区，用于中断
-    this->m_receiveData = message;
 
     return this->m_receiveErrCode;
 }

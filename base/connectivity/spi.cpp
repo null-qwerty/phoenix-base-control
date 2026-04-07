@@ -66,15 +66,8 @@ SPI &SPI::init()
     return *this;
 }
 
-EsfStatus SPI::_sendMessageImpl()
+EsfStatus SPI::_sendMessageImpl(MessageSend &message)
 {
-    // 从发送队列中获取消息进行发送
-    Message message;
-    this->m_sendErrCode = this->read_queue.pop(message);
-    if (this->m_sendErrCode != ESF_SUCCESS) {
-        return this->m_sendErrCode;
-    }
-    // 发送消息
     if (HAL_SPI_Transmit(m_handle, message.data, message.size, HAL_MAX_DELAY) != HAL_OK) {
         return (m_sendErrCode = ESF_CONNECTIVITY_SEND_ERROR);
     }
@@ -82,14 +75,8 @@ EsfStatus SPI::_sendMessageImpl()
     return m_sendErrCode;
 }
 
-EsfStatus SPI::_receiveMessageDmaImpl()
+EsfStatus SPI::_receiveMessageDmaImpl(MessageReceive &message)
 {
-    // 从接收队列中获取接收消息的信息
-    Message message;
-    this->m_receiveErrCode = this->write_queue.pop(message);
-    if (this->m_receiveErrCode != ESF_SUCCESS) {
-        return this->m_receiveErrCode;
-    }
     auto errcode = HAL_SPI_Receive_DMA(m_handle, message.data, message.size);
     if (errcode == HAL_OK) {
         this->m_receiveErrCode = ESF_SUCCESS;
@@ -103,14 +90,8 @@ EsfStatus SPI::_receiveMessageDmaImpl()
     return this->m_receiveErrCode;
 }
 
-EsfStatus SPI::_receiveMessageImpl()
+EsfStatus SPI::_receiveMessageImpl(MessageReceive &message)
 {
-    // 从接收队列中获取接收消息的信息
-    Message message;
-    this->m_receiveErrCode = this->write_queue.pop(message);
-    if (this->m_receiveErrCode != ESF_SUCCESS) {
-        return this->m_receiveErrCode;
-    }
     auto errcode = HAL_SPI_Receive(m_handle, message.data, message.size, HAL_MAX_DELAY);
     if (errcode == HAL_OK) {
         this->m_receiveErrCode = ESF_SUCCESS;
@@ -123,15 +104,8 @@ EsfStatus SPI::_receiveMessageImpl()
     return this->m_receiveErrCode;
 }
 
-EsfStatus SPI::_sendMessageDmaImpl()
+EsfStatus SPI::_sendMessageDmaImpl(MessageSend &message)
 {
-    // 从发送队列中获取消息进行发送
-    Message message;
-    this->m_sendErrCode = this->read_queue.pop(message);
-    if (this->m_sendErrCode != ESF_SUCCESS) {
-        return this->m_sendErrCode;
-    }
-    // 发送消息
     if (HAL_SPI_Transmit_DMA(m_handle, message.data, message.size) != HAL_OK) {
         return (m_sendErrCode = ESF_CONNECTIVITY_SEND_ERROR);
     }

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "connectivity.hpp"
-#include "portmacro.h"
 #ifdef HAL_FDCAN_MODULE_ENABLED
 #include <map>
 
@@ -12,22 +11,29 @@ namespace esf
 namespace base
 {
 /**
- * @brief fdcan 消息结构体
+ * @brief fdcan 发送消息结构体
  *
  */
-struct FdcanMessage {
+struct FdcanSendMessage {
+    FDCAN_TxHeaderTypeDef header;
     uint8_t *data;
-    size_t size;
-    uint32_t id;
-    bool is_ext;
+};
+/**
+ * @brief fdcan 接收消息结构体
+ *
+ */
+struct FdcanReceiveMessage {
+    FDCAN_RxHeaderTypeDef header;
+    uint8_t *data;
 };
 /**
  * @brief fdcan 通信类，继承自 Connectivity，使用 CRTP 模式实现
  *
  */
-class FDCAN : public Connectivity<FDCAN, FdcanMessage> {
+class FDCAN : public Connectivity<FDCAN, FdcanReceiveMessage, FdcanSendMessage> {
 public:
-    using Message = FdcanMessage; // 消息类型定义
+    using MessageReceive = FdcanReceiveMessage; // 消息类型定义
+    using MessageSend = FdcanSendMessage;
 
     /**
      * @brief 构造函数
@@ -36,7 +42,7 @@ public:
      * @param filter FDCAN 过滤器配置
      */
     FDCAN(FDCAN_HandleTypeDef &handle, FDCAN_FilterTypeDef &filter)
-        : Connectivity<FDCAN, FdcanMessage>(DMA::DISABLE)
+        : Connectivity<FDCAN, FdcanReceiveMessage, FdcanSendMessage>(DMA::DISABLE)
         , m_handle(&handle)
         , m_filter(&filter)
     {
@@ -66,10 +72,10 @@ private:
     static std::map<FDCAN_GlobalTypeDef *, FDCAN *> fdcan_map;
 
     // 实现 Connectivity 接口的发送和接收函数
-    EsfStatus _sendMessageImpl();
-    EsfStatus _receiveMessageImpl();
-    EsfStatus _sendMessageDmaImpl();
-    EsfStatus _receiveMessageDmaImpl();
+    EsfStatus _sendMessageImpl(MessageSend &message);
+    EsfStatus _receiveMessageImpl(MessageReceive &message);
+    EsfStatus _sendMessageDmaImpl(MessageSend &message);
+    EsfStatus _receiveMessageDmaImpl(MessageReceive &message);
 
     EsfStatus _rxCallback();
 };

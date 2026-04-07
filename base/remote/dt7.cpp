@@ -10,24 +10,19 @@ Dt7<ConnectivityType>::Dt7(ConnectivityType &connectivity)
 {
 }
 
-template <typename ConnectivityType>
-Dt7<ConnectivityType> &Dt7<ConnectivityType>::init()
+template <typename ConnectivityType> Dt7<ConnectivityType> &Dt7<ConnectivityType>::init()
 {
     this->m_connectivity.init();
     return *this;
 }
 
-template <typename ConnectivityType>
-Dt7Protocol &Dt7<ConnectivityType>::data()
+template <typename ConnectivityType> Dt7Protocol &Dt7<ConnectivityType>::data()
 {
     return m_receiveData;
 }
 
-template <typename ConnectivityType>
-Dt7<ConnectivityType> &Dt7<ConnectivityType>::decode()
+template <typename ConnectivityType> Dt7<ConnectivityType> &Dt7<ConnectivityType>::decode(ConnectivityMessageType &msg)
 {
-    ConnectivityMessageType msg;
-    this->m_status = this->m_connectivity.popFromReceiveQueue(msg);
     if (msg.size != 18) {
         return *this; // 数据长度不正确，返回当前对象
     }
@@ -54,3 +49,14 @@ Dt7<ConnectivityType> &Dt7<ConnectivityType>::decode()
 }
 } // namespace base
 } // namespace esf
+
+#include "connectivity/uart.hpp"
+#ifdef HAL_UART_MODULE_ENABLED
+namespace esf
+{
+namespace base
+{
+template class Dt7<UART>;
+} // namespace base
+} // namespace esf
+#endif

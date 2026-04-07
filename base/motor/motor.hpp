@@ -31,9 +31,10 @@ struct BasicMotorState {
 template <typename Derived, typename MotorType, typename ConnectivityType>
 class MotorHelper : public WithConnectivity<ConnectivityType> {
 public:
-    using ConnectivityMessageType = typename ConnectivityType::Message; // 通信接口消息类型
-    using MotorStateType = typename MotorType::State;                   // 电机状态
-    using MotorCommendType = typename MotorType::Commend;               // 电机控制指令
+    using ConnectivitySendMessageType = typename ConnectivityType::MessageSend; // 通信接口消息类型
+    using ConnectivityReceiveMessageType = typename ConnectivityType::MessageReceive;
+    using MotorStateType = typename MotorType::State;     // 电机状态
+    using MotorCommendType = typename MotorType::Commend; // 电机控制指令
 
     /**
      * @brief 构造函数
@@ -77,7 +78,7 @@ public:
      * @return EsfStatus 成功返回 ESF_SUCCESS(0)，其他返回参考 core/status.hpp
      * @note CRTP 接口，派生类需要实现 `EsfStatus _decodeMessageImpl(ConnectivityMessageType)`
      */
-    virtual EsfStatus decodeMessage(ConnectivityMessageType &message) final
+    virtual EsfStatus decodeMessage(ConnectivityReceiveMessageType &message) final
     {
         return static_cast<Derived *>(this)->_decodeMessageImpl(message);
     }

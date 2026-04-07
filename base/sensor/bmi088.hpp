@@ -37,7 +37,7 @@ struct Bmi088Data {
  */
 template <typename ConnectivityType> class BMI088 : public WithConnectivity<ConnectivityType> {
 public:
-    using ConnectivityMessageType = typename ConnectivityType::Message; // 消息类型定义
+    using ConnectivityMessageType = typename ConnectivityType::MessageSend; // 消息类型定义
 
     /**
      * @brief 构造函数，创建一个 BMI088 实例

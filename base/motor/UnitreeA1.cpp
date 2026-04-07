@@ -50,7 +50,7 @@ template <> inline EsfStatus UnitreeA1Helper<UART>::_sendOneMotorCommend(Unitree
     // 发送 buffer 段
     m_send_frame.data = reinterpret_cast<uint8_t *>(comdPtr);
     m_send_frame.size = sizeof(UnitreeA1CommendData);
-    auto errcode = m_connectivity.pushToSendQueue(m_receive_frame);
+    auto errcode = m_connectivity.receiveMessage(m_receive_frame);
     if (errcode == ESF_SUCCESS) {
         esf::Thread::this_thread().wait();
     }
@@ -78,7 +78,7 @@ template <> EsfStatus UnitreeA1Helper<UART>::_encodeMessageImpl()
     return m_helper_status;
 }
 
-template <> EsfStatus UnitreeA1Helper<UART>::_decodeMessageImpl(UART::Message &message)
+template <> EsfStatus UnitreeA1Helper<UART>::_decodeMessageImpl(UART::MessageReceive &message)
 {
     UnitreeA1StateData *statePtr = reinterpret_cast<UnitreeA1StateData *>(message.data);
     if (statePtr->crc !=

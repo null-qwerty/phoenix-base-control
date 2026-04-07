@@ -41,16 +41,20 @@ RM3508Helper<FDCAN>::RM3508Helper(FDCAN &connectivity, RM3508HelperId id)
     : MotorHelper<RM3508Helper<FDCAN>, RM3508, FDCAN>(connectivity)
     , m_id(id)
 {
-    m_send_frame.id = static_cast<uint32_t>(m_id);
-    m_send_frame.is_ext = false;
-    m_send_frame.size = 8;
+    m_send_frame.header.IdType = FDCAN_STANDARD_ID;
+    m_send_frame.header.Identifier = static_cast<uint32_t>(m_id);
+    m_send_frame.header.DataLength = FDCAN_DATA_BYTES_8;
+    m_send_frame.header.TxFrameType = FDCAN_DATA_FRAME;
+    m_send_frame.header.FDFormat = FDCAN_CLASSIC_CAN;
+    m_send_frame.header.BitRateSwitch = FDCAN_BRS_OFF;
+    m_send_frame.header.MessageMarker = 0;
+
     m_send_frame.data = new uint8_t[8];
     memset(m_send_frame.data, 0, 8);
 
     m_receive_frame.data = new uint8_t[8];
 
-    // m_connectivity.pushToSendQueue(m_send_frame);
-    m_connectivity.pushToReceiveQueue(m_receive_frame);
+    // m_connectivity.sendMessage(m_send_frame);
 }
 
 template <> EsfStatus RM3508Helper<FDCAN>::_encodeMessageImpl()
@@ -64,16 +68,17 @@ template <> EsfStatus RM3508Helper<FDCAN>::_encodeMessageImpl()
         m_send_frame.data[index] = (current >> 8) & 0xff;
         m_send_frame.data[index + 1] = (current >> 0) & 0xff;
     }
-    return m_connectivity.pushToSendQueue(m_send_frame);
+    return m_connectivity.sendMessage(m_send_frame);
 }
 
-template <> EsfStatus RM3508Helper<FDCAN>::_decodeMessageImpl(FDCAN::Message &message)
+template <> EsfStatus RM3508Helper<FDCAN>::_decodeMessageImpl(FDCAN::MessageReceive &message)
 {
-    if (m_motor_map.find(message.id - 0x200) == m_motor_map.end()) {
-        m_connectivity.pushToReceiveQueue(m_receive_frame);
+    m_connectivity.receiveMessage(m_receive_frame);
+
+    if (m_motor_map.find(message.header.Identifier - 0x200) == m_motor_map.end()) {
         return ESF_MOTOR_NOT_REGISTERD_TO_HELPER;
     }
-    auto &motor = m_motor_map[message.id - 0x200];
+    auto &motor = m_motor_map[message.header.Identifier - 0x200];
     auto data = message.data;
     auto last_rotor_position = motor->state().rotor_position; // 记录上次转子位置
     // 记录原始信息，RM3508 原始信息均为转子信息
@@ -97,7 +102,6 @@ template <> EsfStatus RM3508Helper<FDCAN>::_decodeMessageImpl(FDCAN::Message &me
     motor->state().velocity = motor->state().rotor_velocity / motor->m_reduction_ratio;
     motor->state().torque = motor->state().rotor_current * motor->m_current_param;
 
-    m_connectivity.pushToReceiveQueue(m_receive_frame);
     return ESF_SUCCESS;
 }
 

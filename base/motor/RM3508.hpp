@@ -30,7 +30,8 @@ enum class RM3508HelperId : uint16_t { MOTOR_1_TO_4 = 0x200, MOTOR_5_TO_9 = 0x1f
 template <typename ConnectivityType>
 class RM3508Helper : public MotorHelper<RM3508Helper<ConnectivityType>, RM3508, ConnectivityType> {
 public:
-    using ConnectivityMessageType = typename ConnectivityType::Message;
+    using ConnectivityReceiveMessageType = typename ConnectivityType::MessageReceive;
+    using ConnectivitySendMessageType = typename ConnectivityType::MessageSend;
 
     RM3508Helper(ConnectivityType &connectivity, RM3508HelperId id);
     ~RM3508Helper() = default;
@@ -38,7 +39,8 @@ public:
     friend MotorHelper<RM3508Helper<ConnectivityType>, RM3508, ConnectivityType>;
 
 private:
-    ConnectivityMessageType m_receive_frame, m_send_frame;
+    ConnectivityReceiveMessageType m_receive_frame;
+    ConnectivitySendMessageType m_send_frame;
 
     RM3508HelperId m_id;
 
@@ -52,7 +54,7 @@ private:
         return ESF_SUCCESS;
     }
     EsfStatus _encodeMessageImpl();
-    EsfStatus _decodeMessageImpl(ConnectivityMessageType &message);
+    EsfStatus _decodeMessageImpl(ConnectivityReceiveMessageType &message);
 };
 
 } // namespace base

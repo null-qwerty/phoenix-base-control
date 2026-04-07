@@ -31,7 +31,8 @@ public:
 template <typename ConnectivityType>
 class UnitreeA1Helper : public MotorHelper<UnitreeA1Helper<ConnectivityType>, UnitreeA1, ConnectivityType> {
 public:
-    using ConnectivityMessageType = typename ConnectivityType::Message;
+    using ConnectivityReceiveMessageType = typename ConnectivityType::MessageReceive;
+    using ConnectivitySendMessageType = typename ConnectivityType::MessageSend;
 
     UnitreeA1Helper(ConnectivityType &connectivity)
         : MotorHelper<UnitreeA1Helper<ConnectivityType>, UnitreeA1, ConnectivityType>(connectivity)
@@ -69,7 +70,8 @@ public:
     friend MotorHelper<UnitreeA1Helper<ConnectivityType>, UnitreeA1, ConnectivityType>;
 
 private:
-    ConnectivityMessageType m_receive_frame, m_send_frame;
+    ConnectivityReceiveMessageType m_receive_frame;
+    ConnectivitySendMessageType m_send_frame;
     EsfStatus m_helper_status;
 
     EsfStatus _registerMotorImpl(UnitreeA1 &motor)
@@ -79,7 +81,7 @@ private:
         return ESF_SUCCESS;
     }
     EsfStatus _encodeMessageImpl();
-    EsfStatus _decodeMessageImpl(ConnectivityMessageType &message);
+    EsfStatus _decodeMessageImpl(ConnectivityReceiveMessageType &message);
 
     inline EsfStatus _sendOneMotorCommend(UnitreeA1 *motor);
 };

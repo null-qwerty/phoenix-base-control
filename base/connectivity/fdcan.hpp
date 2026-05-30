@@ -15,7 +15,7 @@ namespace base
  *
  */
 struct FdcanSendMessage {
-    FDCAN_TxHeaderTypeDef header;
+    FDCAN_TxHeaderTypeDef header = { 0 };
     uint8_t *data;
 };
 /**
@@ -23,7 +23,7 @@ struct FdcanSendMessage {
  *
  */
 struct FdcanReceiveMessage {
-    FDCAN_RxHeaderTypeDef header;
+    FDCAN_RxHeaderTypeDef header = { 0 };
     uint8_t *data;
 };
 /**

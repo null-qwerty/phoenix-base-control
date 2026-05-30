@@ -27,9 +27,9 @@ UnitreeA1::UnitreeA1(uint32_t id, float reduration_ratio, Direction direction)
     m_max.velocity = 21.0f;
     m_max.torque = 33.5f;
 
-    MasterComdV3 *pCommedDataBuf = &(m_commend.data);
+    MasterComdV3 *pCommedDataBuf = &(m_command.data);
     memset(pCommedDataBuf, 0, sizeof(MasterComdV3));
-    m_commend.header.id = static_cast<uint8_t>(id);
+    m_command.header.id = static_cast<uint8_t>(id);
 }
 
 } // namespace base
@@ -44,8 +44,8 @@ namespace base
 
 template <> inline EsfStatus UnitreeA1Helper<UART>::_sendOneMotorCommend(UnitreeA1 *motor)
 {
-    UnitreeA1CommendData *comdPtr = &motor->m_commend;
-    motor->m_commend.crc = UnitreeA1Helper::crc32(reinterpret_cast<uint32_t *>(comdPtr),
+    UnitreeA1CommendData *comdPtr = &motor->m_command;
+    motor->m_command.crc = UnitreeA1Helper::crc32(reinterpret_cast<uint32_t *>(comdPtr),
                                                   sizeof(UnitreeA1CommendData) / 4 - 1);
     // 发送 buffer 段
     m_send_frame.data = reinterpret_cast<uint8_t *>(comdPtr);
@@ -63,12 +63,12 @@ template <> EsfStatus UnitreeA1Helper<UART>::_encodeMessageImpl()
     for (auto &id_motor_pair : m_motor_map) {
         auto &motor = id_motor_pair.second;
         // 根据协议转换
-        motor->m_commend.data.T = 1.0 * static_cast<double>(motor->m_direction) * motor->m_commend.torque * 256;
-        motor->m_commend.data.W = 1.0 * static_cast<double>(motor->m_direction) * motor->m_commend.velocity * 128;
-        motor->m_commend.data.Pos = 1.0 * static_cast<double>(motor->m_direction) * motor->m_commend.position * 16384 /
+        motor->m_command.data.T = 1.0 * static_cast<double>(motor->m_direction) * motor->m_command.torque * 256;
+        motor->m_command.data.W = 1.0 * static_cast<double>(motor->m_direction) * motor->m_command.velocity * 128;
+        motor->m_command.data.Pos = 1.0 * static_cast<double>(motor->m_direction) * motor->m_command.position * 16384 /
                                     2 / M_PI;
-        motor->m_commend.data.K_P = motor->m_commend.kp * 2048;
-        motor->m_commend.data.K_W = motor->m_commend.kw * 1024;
+        motor->m_command.data.K_P = motor->m_command.kp * 2048;
+        motor->m_command.data.K_W = motor->m_command.kw * 1024;
         // 发送一个电机的控制信号，并接受反馈
         auto errcode = this->_sendOneMotorCommend(motor);
         if (!errcode) {

@@ -34,7 +34,7 @@ public:
     using ConnectivitySendMessageType = typename ConnectivityType::MessageSend; // 通信接口消息类型
     using ConnectivityReceiveMessageType = typename ConnectivityType::MessageReceive;
     using MotorStateType = typename MotorType::State;     // 电机状态
-    using MotorCommendType = typename MotorType::Commend; // 电机控制指令
+    using MotorCommendType = typename MotorType::Command; // 电机控制指令
 
     /**
      * @brief 构造函数
@@ -92,12 +92,12 @@ protected:
  *
  * @tparam Derived 派生类
  * @tparam StateType 电机状态量类型
- * @tparam CommendType 电机控制量类型
+ * @tparam CommandType 电机控制量类型
  */
-template <typename Derived, typename StateType = Derived::State, typename CommendType = Derived::Commend> class Motor {
+template <typename Derived, typename StateType = Derived::State, typename CommandType = Derived::Command> class Motor {
 public:
     using State = StateType;
-    using Commend = CommendType;
+    using Command = CommandType;
 
     enum class Direction : int8_t { CW = -1, CCW = 1 }; // 电机旋转正方向，默认逆时针（CCW）为正
 
@@ -158,11 +158,11 @@ public:
     /**
      * @brief 获取电机控制信息
      *
-     * @return Commend& 控制信息
+     * @return Command& 控制信息
      */
-    Commend &commend()
+    Command &command()
     {
-        return m_commend;
+        return m_command;
     }
 
     /**
@@ -180,7 +180,7 @@ protected:
     float m_reduction_ratio; // 减速比
 
     State m_state, m_zero, m_max, m_min; // 状态、零点和限制
-    Commend m_commend;                   // 控制信息
+    Command m_command;                   // 控制信息
 
     Direction m_direction; // 正方向
 };

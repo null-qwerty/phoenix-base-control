@@ -9,7 +9,7 @@ namespace esf
 namespace base
 {
 RM3508::RM3508(uint32_t id, float reduration_ratio, Direction direction)
-    : Motor<RM3508, RM3508State, uint16_t>(id, reduration_ratio, direction)
+    : Motor<RM3508, RM3508State, int16_t>(id, reduration_ratio, direction)
     , m_current_param(0.3f / (3591.0f / 17.0f) * reduration_ratio)
 {
     m_zero.position = 0.0f;
@@ -55,6 +55,7 @@ RM3508Helper<FDCAN>::RM3508Helper(FDCAN &connectivity, RM3508HelperId id)
     m_receive_frame.data = new uint8_t[8];
 
     // m_connectivity.sendMessage(m_send_frame);
+    m_connectivity.receiveMessage(m_receive_frame);
 }
 
 template <> EsfStatus RM3508Helper<FDCAN>::_encodeMessageImpl()
@@ -64,22 +65,26 @@ template <> EsfStatus RM3508Helper<FDCAN>::_encodeMessageImpl()
         auto &id = id_motor_pair.first;
         auto &motor = id_motor_pair.second;
         uint8_t index = id - index_offset;
-        uint16_t current = static_cast<int8_t>(motor->m_direction) * motor->commend();
+        int16_t current = static_cast<int16_t>(motor->m_direction) * motor->commend();
         m_send_frame.data[index * 2] = (current >> 8) & 0xff;
         m_send_frame.data[index * 2 + 1] = (current >> 0) & 0xff;
     }
-    return m_connectivity.sendMessage(m_send_frame);
+    // return m_connectivity.sendMessage(m_send_frame);
+    return ESF_SUCCESS;
 }
 
 template <> EsfStatus RM3508Helper<FDCAN>::_decodeMessageImpl(FDCAN::MessageReceive &message)
 {
     m_connectivity.receiveMessage(m_receive_frame);
 
-    if (m_motor_map.find(message.header.Identifier - 0x200) == m_motor_map.end()) {
+    // if (m_motor_map.find(m_receive_frame.header.Identifier - 0x200) == m_motor_map.end()) {
+    //     return ESF_MOTOR_NOT_REGISTERD_TO_HELPER;
+    // }
+    auto &motor = m_motor_map[m_receive_frame.header.Identifier - 0x200];
+    if (motor == nullptr) {
         return ESF_MOTOR_NOT_REGISTERD_TO_HELPER;
     }
-    auto &motor = m_motor_map[message.header.Identifier - 0x200];
-    auto data = message.data;
+    auto data = m_receive_frame.data;
     auto last_rotor_position = motor->state().rotor_position; // 记录上次转子位置
     // 记录原始信息，RM3508 原始信息均为转子信息
     motor->state().rotor_position = 1.0 * static_cast<double>(motor->m_direction) *

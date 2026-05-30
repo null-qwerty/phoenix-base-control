@@ -12,7 +12,7 @@ struct RM3508State : public BasicMotorState {
     double rotor_velocity; // 转子速度
     double rotor_current;  // 转矩电流
 };
-class RM3508 : public Motor<RM3508, RM3508State, uint16_t> {
+class RM3508 : public Motor<RM3508, RM3508State, int16_t> {
 public:
     RM3508(uint32_t id, float reduration_ratio = 3591.0f / 17.0f, Direction direction = Direction::CCW);
     ~RM3508() = default;
